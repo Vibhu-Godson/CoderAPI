@@ -1,0 +1,6 @@
+@CoderAPI_HostAddress = http://localhost:5183
+
+GET {{CoderAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

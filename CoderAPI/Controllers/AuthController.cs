@@ -1,0 +1,61 @@
+﻿using CoderAPI.DTOs;
+using CoderAPI.Helper.Interface;
+using CoderAPI.Service.Interface;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CoderAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly IAuthService _authService;
+        private readonly ICustomLogger _logger;
+
+        public AuthController(IAuthService authService, ICustomLogger logger)
+        {
+            _authService = authService;
+            _logger = logger;
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+        {
+            try
+            {
+                var response = await _authService.Login(request);
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"unable to login user {request.UserName}", ex);
+                return StatusCode(500, new LoginResponse
+                {
+                    Status = false,
+                    Message = "An error occurred while processing your request.",
+                    Token = "",
+                    UserName = ""
+                });
+            }
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<StatusResponse>> RegisterUser([FromBody] UserDto request)
+        {
+            try
+            {
+                var response = await _authService.RegisterUser(request);
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"unable to register user {request.UserName}", ex);
+                return StatusCode(500, new StatusResponse
+                {
+                    Status = false,
+                    Message = "An error occurred while processing your request."
+                });
+            }
+        }
+    }
+}

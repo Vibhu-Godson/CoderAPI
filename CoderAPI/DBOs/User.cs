@@ -10,6 +10,7 @@ namespace CoderAPI.DBOs;
 [Index("PhoneNumber", Name = "UQ__Users__85FB4E38E5BD99EC", IsUnique = true)]
 [Index("GoogleId", Name = "UQ__Users__A6FBF2FB33310730", IsUnique = true)]
 [Index("Email", Name = "UQ__Users__A9D10534A490BA55", IsUnique = true)]
+[Index("UserName", Name = "UQ__Users__C9F28456EBF038C2", IsUnique = true)]
 public partial class User
 {
     [Key]
@@ -55,6 +56,9 @@ public partial class User
     public DateTime? UpdatedOn { get; set; }
 
     public long? UpdatedBy { get; set; }
+
+    [StringLength(50)]
+    public string UserName { get; set; } = null!;
 
     [InverseProperty("User")]
     public virtual ICollection<UserNote> UserNotes { get; set; } = new List<UserNote>();

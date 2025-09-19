@@ -71,4 +71,7 @@ public partial class UserSolution
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSolutions")]
     public virtual UserProblemSession UserProblemSession { get; set; } = null!;
+
+    [InverseProperty("UserSolution")]
+    public virtual ICollection<UserTestCaseResult> UserTestCaseResults { get; set; } = new List<UserTestCaseResult>();
 }

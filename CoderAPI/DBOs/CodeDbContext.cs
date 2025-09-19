@@ -39,7 +39,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserSubTopic> UserSubTopics { get; set; }
 
-    
+    public virtual DbSet<UserTestCaseResult> UserTestCaseResults { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<LearningStage>(entity =>
@@ -189,6 +190,21 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserSubTopics)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserSubTo__UserI__35BCFE0A");
+        });
+
+        modelBuilder.Entity<UserTestCaseResult>(entity =>
+        {
+            entity.HasKey(e => e.UserTestCaseResultId).HasName("PK__UserTest__CE18B7E11D94368A");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.TestCase).WithMany(p => p.UserTestCaseResults)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserTestC__TestC__60A75C0F");
+
+            entity.HasOne(d => d.UserSolution).WithMany(p => p.UserTestCaseResults)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserTestC__UserS__5FB337D6");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -37,4 +37,7 @@ public partial class TestCase
     [ForeignKey("ProblemId")]
     [InverseProperty("TestCases")]
     public virtual Problem Problem { get; set; } = null!;
+
+    [InverseProperty("TestCase")]
+    public virtual ICollection<UserTestCaseResult> UserTestCaseResults { get; set; } = new List<UserTestCaseResult>();
 }

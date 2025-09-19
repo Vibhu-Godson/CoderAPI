@@ -150,6 +150,7 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.UserSessionChatId).HasName("PK__UserSess__B55156708134883E");
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.MessageType).HasDefaultValue("User");
 
             entity.HasOne(d => d.UserProblemSession).WithMany(p => p.UserSessionChats)
                 .OnDelete(DeleteBehavior.ClientSetNull)

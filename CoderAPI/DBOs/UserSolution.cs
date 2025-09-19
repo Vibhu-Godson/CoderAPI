@@ -44,6 +44,22 @@ public partial class UserSolution
 
     public long? UpdatedBy { get; set; }
 
+    [StringLength(100)]
+    public string? Judge0SubmissionId { get; set; }
+
+    public double? ExecutionTime { get; set; }
+
+    public long? MemoryUsed { get; set; }
+
+    public string? CompileOutput { get; set; }
+
+    public string? Stdout { get; set; }
+
+    public string? Stderr { get; set; }
+
+    [StringLength(255)]
+    public string? StatusDescription { get; set; }
+
     [ForeignKey("ProblemId")]
     [InverseProperty("UserSolutions")]
     public virtual Problem Problem { get; set; } = null!;

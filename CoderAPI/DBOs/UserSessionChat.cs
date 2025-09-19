@@ -14,9 +14,6 @@ public partial class UserSessionChat
 
     public long UserProblemSessionId { get; set; }
 
-    public bool IsUserMessage { get; set; }
-
-    [StringLength(1000)]
     public string ChatMessage { get; set; } = null!;
 
     [Column(TypeName = "decimal(2, 2)")]
@@ -48,6 +45,9 @@ public partial class UserSessionChat
     public DateTime? UpdatedOn { get; set; }
 
     public long? UpdatedBy { get; set; }
+
+    [StringLength(50)]
+    public string MessageType { get; set; } = null!;
 
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSessionChats")]

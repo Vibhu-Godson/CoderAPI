@@ -1,9 +1,12 @@
 ﻿using CoderAPI.DBOs;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
+using CoderAPI.Consumers.CodeRunner;
+using CoderAPI.Consumers.LLM;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +42,35 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+// MassTransit + RabbitMQ
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<CodeRunnerConsumer>();
+    x.AddConsumer<LLMConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMq:Host"], h =>
+        {
+            h.Username(builder.Configuration["RabbitMq:Username"]);
+            h.Password(builder.Configuration["RabbitMq:Password"]);
+        });
+
+        cfg.ReceiveEndpoint("code-runner-queue", e =>
+        {
+            e.ConfigureConsumer<CodeRunnerConsumer>(context);
+            e.PrefetchCount = 16;
+        });
+
+        cfg.ReceiveEndpoint("llm-analyze-queue", e =>
+        {
+            e.ConfigureConsumer<LLMConsumer>(context);
+            e.PrefetchCount = 8;
+        });
+    });
+});
+builder.Services.AddMassTransitHostedService();
 
 // Register DI
 builder.Services.Scan(scan => scan

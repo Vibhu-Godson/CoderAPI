@@ -1,5 +1,6 @@
 ﻿using CoderAPI.DTOs;
 using CoderAPI.Helper.Interface;
+using CoderAPI.Messages;
 using CoderAPI.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,12 @@ namespace CoderAPI.Controllers
                 _logger.Log(LogLevel.Error, "Unable to get the problem", ex);
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("UserSolution")]
+        public async Task<ActionResult<StatusResponse>> RunCode(RunCodeRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }

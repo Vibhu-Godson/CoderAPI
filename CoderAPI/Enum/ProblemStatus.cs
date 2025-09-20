@@ -14,4 +14,12 @@
         Completed,
         Started
     }
+
+    public enum RunCodeStatus
+    {
+        Pending,
+        Running,
+        Completed,
+        Error
+    }
 }

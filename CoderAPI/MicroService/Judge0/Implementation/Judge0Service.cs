@@ -1,4 +1,5 @@
 ﻿using CoderAPI.DTOs.codeRunner;
+using CoderAPI.Enum;
 using CoderAPI.Helper.Interface;
 using CoderAPI.Messages;
 using CoderAPI.MicroService.Judge0.Interface;
@@ -18,37 +19,56 @@ namespace CoderAPI.MicroService.Judge0.Implementation
             _logger = logger;
         }
 
-        public Task<Judge0Result> RunCode(RunCodeRequest request)
+        public async Task<Judge0Result> RunCode(Judge0CodeRunRequest request)
         {
             try
             {
-                throw new NotImplementedException();
+                var baseUrl = _config["Judge0:BaseUrl"];
+                var url = $"{baseUrl}/submission?base64_encoded=false&wait=true";
+
+                var payload = new
+                {
+                    source_code = request.SourceCode,
+                    language_id = MapLanguageToId(request.Language),
+                    stdin = request.Input,
+                    expected_output = request.ExpectedOutput
+                };
+
+                var response = await _http.PostAsJsonAsync(url, payload);
+                response.EnsureSuccessStatusCode();
+
+                var apiResponse = await response.Content.ReadFromJsonAsync<Judge0ApiResponse>();
+
+                return new Judge0Result
+                {
+                    SubmissionId = apiResponse.Token,
+                    Status = apiResponse.Status?.Description ?? "Unknown",
+                    Stdout = apiResponse.Stdout,
+                    Stderr = apiResponse.Stderr,
+                    CompileOutput = apiResponse.Compile_Output,
+                    ExitCode = apiResponse.Exit_Code ?? -1,
+                    ExecutionTime = double.TryParse(apiResponse.Time, out var t) ? t : null,
+                    MemoryUsed = apiResponse.Memory,
+                    Time = double.TryParse(apiResponse.Time, out var t2) ? (long)(t2 * 1000) : 0, // ms
+                    Memory = apiResponse.Memory ?? 0
+                };
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Error, $"Judge0Error: unable to run code", ex);
+                _logger.Log(LogLevel.Error, $"QueueError: unable to Run code", ex);
                 throw;
             }
         }
-        private int MapLanguageToJudge0Id(string lang)
+        private int MapLanguageToId(string lang)
         {
-            // Map "cpp", "python" -> judge0 ids
-            return 71; // example
-        }
-
-        private string MapJudge0Status(int id)
-        {
-            // Example mapping
-            return id switch
+            return lang.ToLower() switch
             {
-                1 => "In Queue",
-                2 => "Processing",
-                3 => "Accepted",
-                4 => "WrongAnswer",
-                5 => "TimeLimitExceeded",
-                6 => "CompilationError",
-                7 => "RuntimeError",
-                _ => "Unknown"
+                "c" => 50,
+                "cpp" => 54,
+                "java" => 62,
+                "python" => 71,
+                "csharp" => 51,
+                _ => throw new ArgumentException($"Unsupported language: {lang}")
             };
         }
     }

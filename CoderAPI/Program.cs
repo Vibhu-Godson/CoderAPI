@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using CoderAPI.Consumers.CodeRunner;
 using CoderAPI.Consumers.LLM;
+using CoderAPI.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,34 +44,36 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// MassTransit + RabbitMQ
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<CodeRunnerConsumer>();
-    x.AddConsumer<LLMConsumer>();
+//// MassTransit + RabbitMQ
+//builder.Services.AddMassTransit(x =>
+//{
+//    x.AddConsumer<CodeRunnerConsumer>();
+//    x.AddConsumer<LLMConsumer>();
 
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(builder.Configuration["RabbitMq:Host"], h =>
-        {
-            h.Username(builder.Configuration["RabbitMq:Username"]);
-            h.Password(builder.Configuration["RabbitMq:Password"]);
-        });
+//    x.UsingRabbitMq((context, cfg) =>
+//    {
+//        cfg.Host(builder.Configuration["RabbitMq:Host"], h =>
+//        {
+//            h.Username(builder.Configuration["RabbitMq:Username"]);
+//            h.Password(builder.Configuration["RabbitMq:Password"]);
+//        });
 
-        cfg.ReceiveEndpoint("code-runner-queue", e =>
-        {
-            e.ConfigureConsumer<CodeRunnerConsumer>(context);
-            e.PrefetchCount = 16;
-        });
+//        cfg.ReceiveEndpoint("code-runner-queue", e =>
+//        {
+//            e.ConfigureConsumer<CodeRunnerConsumer>(context);
+//            e.PrefetchCount = 16;
+//        });
 
-        cfg.ReceiveEndpoint("llm-analyze-queue", e =>
-        {
-            e.ConfigureConsumer<LLMConsumer>(context);
-            e.PrefetchCount = 8;
-        });
-    });
-});
-builder.Services.AddMassTransitHostedService();
+//        cfg.ReceiveEndpoint("llm-analyze-queue", e =>
+//        {
+//            e.ConfigureConsumer<LLMConsumer>(context);
+//            e.PrefetchCount = 8;
+//        });
+//    });
+//});
+//builder.Services.AddMassTransitHostedService();
+
+//builder.Services.AddSignalR();
 
 // Register DI
 builder.Services.Scan(scan => scan
@@ -114,7 +117,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.MapHub<CodeExecutionHub>("/hubs/codeExecution");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

@@ -23,7 +23,7 @@ namespace CoderAPI.Controllers
         }
 
         [HttpPost()]
-        public async Task<ActionResult<ListPageDto<ProblemCard>>> GetProblems([FromQuery] ProblemQuery query, int pageNumber, int pageSize)
+        public async Task<ActionResult<ListPageDto<ProblemCard>>> GetProblems(ProblemQuery query, int pageNumber, int pageSize)
         {
             try
             {
@@ -55,6 +55,36 @@ namespace CoderAPI.Controllers
 
         [HttpPost("UserSolution")]
         public async Task<ActionResult<StatusResponse>> RunCode(RunCodeRequest request)
+        {
+            try
+            {
+                var response = await _problemService.RunCode(request, Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value));
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, "Unable to run the code", ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("NewSession")]
+        public async Task<ActionResult<CreateUserSessionResponse>> StartNewSession(long ProblemId)
+        {
+            try
+            {
+                var response = await _problemService.StartNewUserProblemSession(ProblemId, Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value));
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, "Unable to start new session", ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("Promt")]
+        public Task<ActionResult<LLMResponse>> UserSessionChat(LLMAnalysisRequest request)
         {
             throw new NotImplementedException();
         }

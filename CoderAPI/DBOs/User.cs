@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoderAPI.DBOs;
 
+[Table("User")]
 [Index("FacebookId", Name = "UQ__Users__4D656465EFF09EC5", IsUnique = true)]
 [Index("PhoneNumber", Name = "UQ__Users__85FB4E38E5BD99EC", IsUnique = true)]
 [Index("GoogleId", Name = "UQ__Users__A6FBF2FB33310730", IsUnique = true)]

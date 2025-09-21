@@ -1,0 +1,7 @@
+﻿namespace CoderAPI.Repository.Interface
+{
+    public interface IUserProblemSessionRepository
+    {
+        Task<long> CreateUserProblemSession(long ProblemId, long userId);
+    }
+}

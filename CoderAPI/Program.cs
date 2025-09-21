@@ -1,13 +1,17 @@
-﻿using CoderAPI.DBOs;
+﻿using CoderAPI.Consumers.CodeRunner;
+using CoderAPI.Consumers.LLM;
+using CoderAPI.DBOs;
+using CoderAPI.Hubs;
+using CoderAPI.MicroService.Judge0.Implementation;
+using CoderAPI.MicroService.Judge0.Interface;
+using CoderAPI.MicroService.Queue.Implementation;
+using CoderAPI.MicroService.Queue.Interface;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using CoderAPI.Consumers.CodeRunner;
-using CoderAPI.Consumers.LLM;
-using CoderAPI.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,51 +48,62 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-//// MassTransit + RabbitMQ
-//builder.Services.AddMassTransit(x =>
-//{
-//    x.AddConsumer<CodeRunnerConsumer>();
-//    x.AddConsumer<LLMConsumer>();
+// MassTransit + RabbitMQ
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<CodeRunnerConsumer>();
+    x.AddConsumer<LLMConsumer>();
 
-//    x.UsingRabbitMq((context, cfg) =>
-//    {
-//        cfg.Host(builder.Configuration["RabbitMq:Host"], h =>
-//        {
-//            h.Username(builder.Configuration["RabbitMq:Username"]);
-//            h.Password(builder.Configuration["RabbitMq:Password"]);
-//        });
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMq:Host"], h =>
+        {
+            h.Username(builder.Configuration["RabbitMq:Username"]);
+            h.Password(builder.Configuration["RabbitMq:Password"]);
+        });
 
-//        cfg.ReceiveEndpoint("code-runner-queue", e =>
-//        {
-//            e.ConfigureConsumer<CodeRunnerConsumer>(context);
-//            e.PrefetchCount = 16;
-//        });
+        cfg.ReceiveEndpoint("code-runner-queue", e =>
+        {
+            e.ConfigureConsumer<CodeRunnerConsumer>(context);
+            e.PrefetchCount = 16;
+        });
 
-//        cfg.ReceiveEndpoint("llm-analyze-queue", e =>
-//        {
-//            e.ConfigureConsumer<LLMConsumer>(context);
-//            e.PrefetchCount = 8;
-//        });
-//    });
-//});
-//builder.Services.AddMassTransitHostedService();
+        cfg.ReceiveEndpoint("llm-analyze-queue", e =>
+        {
+            e.ConfigureConsumer<LLMConsumer>(context);
+            e.PrefetchCount = 8;
+        });
+    });
+});
+builder.Services.AddMassTransitHostedService();
 
-//builder.Services.AddSignalR();
+builder.Services.AddSignalR();
 
 // Register DI
 builder.Services.Scan(scan => scan
     .FromApplicationDependencies()
-    .AddClasses(classes => classes.InNamespaces("CoderAPI.Repositories.Implementation"))
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.Repository.Implementation"))
         .AsImplementedInterfaces()
         .WithScopedLifetime()
-    .AddClasses(classes => classes.InNamespaces("CoderAPI.Services.Implementation"))
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.Service.Implementation"))
         .AsImplementedInterfaces()
         .WithScopedLifetime()
     .AddClasses(classes => classes.InNamespaces("CoderAPI.Helper.Implementation"))
         .AsImplementedInterfaces()
         .WithScopedLifetime()
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.MicroService.Judge0.Implementation"))
+        .AsImplementedInterfaces()
+        .WithScopedLifetime()
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.MicroService.Queue.Implementation"))
+        .AsImplementedInterfaces()
+        .WithScopedLifetime()
 );
 
+// Register Judge0Service with HttpClient properly
+builder.Services.AddHttpClient<IJudge0Service, Judge0Service>();
+
+// Register QueuePublisher explicitly
+builder.Services.AddScoped<IQueuePublisher, QueuePublisher>();
 builder.Services.AddDbContext<CodeDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -109,6 +124,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -119,7 +145,7 @@ if (app.Environment.IsDevelopment())
 }
 app.MapHub<CodeExecutionHub>("/hubs/codeExecution");
 app.UseHttpsRedirection();
-
+app.UseCors("AllowReactDev");
 app.UseAuthorization();
 
 app.MapControllers();

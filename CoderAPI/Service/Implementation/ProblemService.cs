@@ -19,9 +19,10 @@ namespace CoderAPI.Service.Implementation
         private readonly ITestCaseRepository _testCaseRepository;
         private readonly IBus _bus;
         private readonly IHubContext<CodeExecutionHub> _hubContext;
+        private readonly IUserProblemSessionRepository _userProblemSessionRepository;
         private readonly ICustomLogger _logger;
 
-        public ProblemService(IProblemRepository problemRepository, IUserSolutionRepository userSolutionRepository, ITestCaseRepository testCaseRepository, ICustomLogger logger, IBus bus, IHubContext<CodeExecutionHub> hubContext)
+        public ProblemService(IProblemRepository problemRepository, IUserSolutionRepository userSolutionRepository, ITestCaseRepository testCaseRepository, ICustomLogger logger, IBus bus, IHubContext<CodeExecutionHub> hubContext, IUserProblemSessionRepository userProblemSessionRepository)
         {
             _problemRepository = problemRepository;
             _userSolutionRepository = userSolutionRepository;
@@ -29,6 +30,7 @@ namespace CoderAPI.Service.Implementation
             _bus = bus;
             _logger = logger;
             _hubContext = hubContext;
+            _userProblemSessionRepository = userProblemSessionRepository;
         }
 
         public async Task<ProblemDto> GetProblemById(long problemId)
@@ -128,6 +130,32 @@ namespace CoderAPI.Service.Implementation
                     Message = "Failed to process the code",
                     Status = false
                 };
+            }
+        }
+
+        public async Task<CreateUserSessionResponse> StartNewUserProblemSession(long ProblemId, long userId)
+        {
+            try
+            {
+                var userProblemSessionId = await _userProblemSessionRepository.CreateUserProblemSession(ProblemId, userId);
+                if(userProblemSessionId <= 0)
+                {
+                    _logger.Log(LogLevel.Error, $"ServerError: Unable to Start new User problem Session for problemId: {ProblemId} and userId:{userId}");
+                    throw new Exception("Unable to start new session");
+                }
+
+                _hubContext.Groups.AddToGroupAsync(userId.ToString(), userProblemSessionId.ToString()).Wait();
+                return new CreateUserSessionResponse
+                {
+                    Message = "New session started successfully",
+                    Status = true,
+                    UserProblemSessionId = userProblemSessionId
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: Unable to Start new User problem Session for problemId: {ProblemId} and userId:{userId}", ex);
+                throw;
             }
         }
     }

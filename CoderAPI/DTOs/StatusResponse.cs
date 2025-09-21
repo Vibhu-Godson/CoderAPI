@@ -25,4 +25,8 @@
             } 
         }
     }
+    public class CreateUserSessionResponse : StatusResponse
+    {
+        public long UserProblemSessionId { get; set; }
+    }
 }

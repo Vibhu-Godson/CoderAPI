@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useLoginMutation } from './authApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from './authSlice';
@@ -7,16 +7,35 @@ import { useNavigate, Link } from 'react-router-dom';
 export default function LoginPage() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [login, { isLoading, error }] = useLoginMutation();
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [toastType, setToastType] = useState<'success' | 'error'>('success');
+    const [login, { isLoading }] = useLoginMutation();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const result = await login({ userName, password }).unwrap();
-        if (result.status) {
-            dispatch(setCredentials({ token: result.token, userName: result.userName }));
-            navigate('/problems');
+        try {
+            const result = await login({ userName, password }).unwrap();
+            if (result.status) {
+                // ✅ Success case
+                dispatch(setCredentials({ token: result.token, userName: result.userName }));
+                setToastType('success');
+                setToastMessage(`Welcome ${result.userName}!`);
+                setTimeout(() => {
+                    setToastMessage(null);
+                    navigate('/problems');
+                }, 2000); // auto-close after 2s then navigate
+            } else {
+                // ❌ Incorrect username/password
+                setToastType('error');
+                setToastMessage(result.message || 'Incorrect username or password');
+                setTimeout(() => setToastMessage(null), 2500);
+            }
+        } catch {
+            setToastType('error');
+            setToastMessage('Something went wrong, please try again.');
+            setTimeout(() => setToastMessage(null), 2500);
         }
     };
 
@@ -43,10 +62,22 @@ export default function LoginPage() {
                     </button>
                 </form>
                 <p className="mt-3 text-center">
-                    Don�t have an account? <Link to="/register">Register</Link>
+                    Don’t have an account? <Link to="/register">Register</Link>
                 </p>
-                {error && <div className="alert alert-danger mt-2">Login failed</div>}
             </div>
+
+            {/* ✅ Toast Notification */}
+            {toastMessage && (
+                <div
+                    className={`toast align-items-center text-white position-fixed bottom-0 end-0 m-3 show ${toastType === 'success' ? 'bg-success' : 'bg-danger'
+                        }`}
+                    role="alert"
+                >
+                    <div className="d-flex">
+                        <div className="toast-body">{toastMessage}</div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

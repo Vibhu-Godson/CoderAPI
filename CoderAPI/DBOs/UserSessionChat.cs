@@ -49,6 +49,14 @@ public partial class UserSessionChat
     [StringLength(50)]
     public string MessageType { get; set; } = null!;
 
+    public string? AiResponse { get; set; }
+
+    [StringLength(900)]
+    public string? AiReply { get; set; }
+
+    [StringLength(1500)]
+    public string? AiExplaination { get; set; }
+
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSessionChats")]
     public virtual UserProblemSession UserProblemSession { get; set; } = null!;

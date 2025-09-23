@@ -1,4 +1,5 @@
 ﻿using CoderAPI.DTOs;
+using CoderAPI.DTOs.TestCase;
 
 namespace CoderAPI.Repository.Interface
 {
@@ -6,5 +7,6 @@ namespace CoderAPI.Repository.Interface
     {
         Task<List<ProblemCard>> GetProblems(ProblemQuery query, int pageNumber, int pageSize, long userId);
         Task<ProblemDto> GetProblemById(long ProblemId);
+        Task<List<TestCaseDto>> GetEdgeCasesByProblemId(long ProblemId);
     }
 }

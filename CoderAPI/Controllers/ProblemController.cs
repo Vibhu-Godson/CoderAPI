@@ -14,12 +14,14 @@ namespace CoderAPI.Controllers
     public class ProblemController : ControllerBase
     {
         private readonly IProblemService _problemService;
+        private readonly IAiAnalysisService _aiAnalysisService;
         private readonly ICustomLogger _logger;
 
-        public ProblemController(IProblemService problemService, ICustomLogger logger)
+        public ProblemController(IProblemService problemService, ICustomLogger logger, IAiAnalysisService aiAnalysisService)
         {
             _problemService = problemService;
             _logger = logger;
+            _aiAnalysisService = aiAnalysisService;
         }
 
         [HttpPost()]
@@ -84,9 +86,18 @@ namespace CoderAPI.Controllers
         }
 
         [HttpPost("Promt")]
-        public Task<ActionResult<LLMResponse>> UserSessionChat(LLMAnalysisRequest request)
+        public async Task<ActionResult<LLMResponse>> UserSessionChat(LLMAnalysisRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = await _aiAnalysisService.AiChat(request);
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"unable to upload promt", ex);
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

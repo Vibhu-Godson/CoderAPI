@@ -35,7 +35,7 @@ public partial class Problem
     public long? UpdatedBy { get; set; }
 
     [InverseProperty("Problem")]
-    public virtual ICollection<ProblemTopic> ProblemTopics { get; set; } = new List<ProblemTopic>();
+    public virtual ICollection<ProblemTag> ProblemTags { get; set; } = new List<ProblemTag>();
 
     [InverseProperty("Problem")]
     public virtual ICollection<TestCase> TestCases { get; set; } = new List<TestCase>();

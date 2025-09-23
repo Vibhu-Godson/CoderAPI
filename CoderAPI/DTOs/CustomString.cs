@@ -5,8 +5,8 @@
         public string Value { get; set; }
     }
 
-    public class TopicString : CustomString
+    public class TagString : CustomString
     {
-        public long TopicId { get; set; }
+        public long TagId { get; set; }
     }
 }

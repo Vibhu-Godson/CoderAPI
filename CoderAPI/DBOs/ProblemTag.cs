@@ -6,15 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoderAPI.DBOs;
 
-[Table("ProblemTopic")]
-public partial class ProblemTopic
+[Table("ProblemTag")]
+public partial class ProblemTag
 {
     [Key]
-    public long ProblemTopicId { get; set; }
+    public long ProblemTagId { get; set; }
+
+    public long TagId { get; set; }
 
     public long ProblemId { get; set; }
-
-    public long TopicId { get; set; }
 
     public bool IsActive { get; set; }
 
@@ -29,10 +29,10 @@ public partial class ProblemTopic
     public long? UpdatedBy { get; set; }
 
     [ForeignKey("ProblemId")]
-    [InverseProperty("ProblemTopics")]
+    [InverseProperty("ProblemTags")]
     public virtual Problem Problem { get; set; } = null!;
 
-    [ForeignKey("TopicId")]
-    [InverseProperty("ProblemTopics")]
-    public virtual Topic Topic { get; set; } = null!;
+    [ForeignKey("TagId")]
+    [InverseProperty("ProblemTags")]
+    public virtual Tag Tag { get; set; } = null!;
 }

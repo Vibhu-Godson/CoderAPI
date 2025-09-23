@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CoderAPI.DTOs.TestCase;
+using System.ComponentModel.DataAnnotations;
 
 namespace CoderAPI.DTOs
 {
@@ -9,6 +10,7 @@ namespace CoderAPI.DTOs
         public string ProblemDetail { get; set; }
         public string DifficultyLevel { get; set; }
         public string Constraints { get; set; }
-        public List<TopicString> Tags { get; set; }
+        public List<TagString> Tags { get; set; }
+        public List<TestCaseDto> TestCases { get; set; }
     }
 }

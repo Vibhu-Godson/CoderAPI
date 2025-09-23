@@ -18,8 +18,8 @@ namespace CoderAPI.Helper.Implementation
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, phone),
-                new Claim("userId", userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, phone) // optional, maps to User.Identity.Name
             };
 
             var token = new JwtSecurityToken(

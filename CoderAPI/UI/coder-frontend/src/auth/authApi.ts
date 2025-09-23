@@ -1,6 +1,6 @@
 // src/features/Auth/authApi.ts
 import { baseApi } from '../api/baseApi';
-import { LOGIN_API, REGISTER_API } from '../api/api_urls';
+import { API_URLS } from '../api/api_urls';
 
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -9,11 +9,12 @@ export const authApi = baseApi.injectEndpoints({
             { userName: string; password: string }
         >({
             query: (body) => ({
-                url: LOGIN_API,
+                url: API_URLS.auth.login,
                 method: 'POST',
                 body,
             }),
         }),
+
         register: builder.mutation<
             { status: boolean; message: string },
             {
@@ -29,7 +30,7 @@ export const authApi = baseApi.injectEndpoints({
             }
         >({
             query: (body) => ({
-                url: REGISTER_API,
+                url: API_URLS.auth.register,
                 method: 'POST',
                 body,
             }),

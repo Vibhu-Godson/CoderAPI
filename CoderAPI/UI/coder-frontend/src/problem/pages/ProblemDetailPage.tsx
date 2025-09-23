@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Split from "react-split";
 import {
@@ -14,7 +14,9 @@ import AIChatPanel from "../components/AIChatPanel";
 export default function ProblemDetailPage() {
     const { id } = useParams<{ id: string }>();
     const problemId = Number(id);
-    const { data: problem } = useGetProblemByIdQuery(problemId);
+
+    // ✅ fetch problem first
+    const { data: problem, isSuccess } = useGetProblemByIdQuery(problemId);
 
     const [startSession] = useNewSessionMutation();
     const [sendPrompt] = useSendPromptMutation();
@@ -25,34 +27,89 @@ export default function ProblemDetailPage() {
     const [userInput, setUserInput] = useState("");
     const [code, setCode] = useState("// Your solution here");
     const [editorLocked, setEditorLocked] = useState(true);
+    const [language, setLanguage] = useState("javascript"); // default
 
+    // ✅ create session once after problem is successfully loaded
     useEffect(() => {
-        if (problemId) {
-            startSession(problemId).unwrap().then((res) => {
-                if (res.status) setSessionId(res.userProblemSessionId);
-            });
+        if (isSuccess && problem?.problemId && !sessionId) {
+            (async () => {
+                try {
+                    const res = await startSession(problem.problemId).unwrap(); // ✅ pass number directly
+
+                    if (res.status) {
+                        setSessionId(res.userProblemSessionId);
+                        console.log("✅ Session started:", res.userProblemSessionId);
+                    } else {
+                        console.warn("⚠️ Failed to create session:", res.message);
+                    }
+                } catch (err) {
+                    console.error("❌ Error creating session:", err);
+                }
+            })();
         }
-    }, [problemId]);
+    }, [isSuccess, problem, startSession, sessionId]);
+
 
     const handleSend = async () => {
         if (!sessionId || !userInput.trim()) return;
+
+        // add user message first
         setChat((c) => [...c, { from: "user", text: userInput }]);
-        const res = await sendPrompt({ problemId, userProblemSessionId: sessionId, userText: userInput }).unwrap();
-        setChat((c) => [...c, { from: "user", text: userInput }, { from: "ai", text: res.message }]);
-        if (res.accuracy >= 50) setEditorLocked(false);
-        setUserInput("");
+
+        try {
+            const res = await sendPrompt({
+                problemId,
+                userProblemSessionId: sessionId,
+                userText: userInput,
+            }).unwrap();
+
+            // add AI response
+            setChat((c) => [
+                ...c,
+                { from: "ai", text: res.message },
+            ]);
+
+            // unlock editor if AI says accuracy >= 50
+            if (res.accuracy >= 50) setEditorLocked(false);
+        } catch (err) {
+            console.error("❌ Error sending prompt:", err);
+        } finally {
+            setUserInput("");
+        }
     };
 
     const handleRun = async () => {
         if (!sessionId) return;
-        const res = await runOrSubmit({ userSolutionId: 0, userProblemSessionId: sessionId, problemId, code, language: "javascript", isSubmit: false }).unwrap();
-        alert(res.message);
+        try {
+            const res = await runOrSubmit({
+                userSolutionId: 0,
+                userProblemSessionId: sessionId,
+                problemId,
+                code,
+                language,
+                isSubmit: false,
+            }).unwrap();
+            alert(res.message);
+        } catch (err) {
+            console.error("❌ Error running code:", err);
+        }
     };
 
     const handleSubmit = async () => {
         if (!sessionId) return;
-        const res = await runOrSubmit({ userSolutionId: 0, userProblemSessionId: sessionId, problemId, code, language: "javascript", isSubmit: true }).unwrap();
-        alert(res.message);
+        try {
+            const res = await runOrSubmit({
+                userSolutionId: 0,
+                userProblemSessionId: sessionId,
+                problemId,
+                code,
+                language,
+                isSubmit: true,
+            }).unwrap();
+            alert(res.message);
+        } catch (err) {
+            console.error("❌ Error submitting code:", err);
+        }
     };
 
     return (
@@ -71,11 +128,25 @@ export default function ProblemDetailPage() {
                 </div>
 
                 <div className="d-flex flex-column">
-                    <CodeEditorPanel code={code} setCode={setCode} onRun={handleRun} onSubmit={handleSubmit} editorLocked={editorLocked} />
+                    <CodeEditorPanel
+                        code={code}
+                        setCode={setCode}
+                        onRun={handleRun}
+                        onSubmit={handleSubmit}
+                        editorLocked={editorLocked}
+                        setEditorLocked={setEditorLocked}
+                        language={language}
+                        setLanguage={setLanguage}
+                    />
                 </div>
 
                 <div className="d-flex flex-column p-3 bg-light">
-                    <AIChatPanel chat={chat} userInput={userInput} setUserInput={setUserInput} onSend={handleSend} />
+                    <AIChatPanel
+                        chat={chat}
+                        userInput={userInput}
+                        setUserInput={setUserInput}
+                        onSend={handleSend}
+                    />
                 </div>
             </Split>
         </div>

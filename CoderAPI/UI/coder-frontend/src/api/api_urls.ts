@@ -1,11 +1,23 @@
 // src/api/api_urls.ts
-export const LOGIN_API = '/api/Auth/login';
-export const REGISTER_API = '/api/Auth/register';
 
-export const PROBLEM_LIST_API = '/api/Problem';
-export const PROBLEM_DETAIL_API = (id: number) => `/api/Problem/${id}`;
-export const PROBLEM_NEW_SESSION_API = '/api/Problem/NewSession';
-export const PROBLEM_PROMPT_API = '/api/Problem/Promt';
-export const PROBLEM_USER_SOLUTION_API = '/api/Problem/UserSolution';
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-export const MASTER_TOPICS_API = '/api/Master/Topics';
+export const API_URLS = {
+    base: {
+        root: BASE_URL,
+    },
+    auth: {
+        login: `${BASE_URL}/api/Auth/login`,
+        register: `${BASE_URL}/api/Auth/register`,
+    },
+    problem: {
+        list: `${BASE_URL}/api/Problem`,
+        detail: (id: number) => `${BASE_URL}/api/Problem/${id}`,
+        newSession: `${BASE_URL}/api/Problem/NewSession`,
+        prompt: `${BASE_URL}/api/Problem/Promt`,
+        userSolution: `${BASE_URL}/api/Problem/UserSolution`,
+    },
+    master: {
+        topics: `${BASE_URL}/api/Master/Topics`,
+    },
+};

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Cloud.AIPlatform.V1" Version="3.46.0" />
     <PackageReference Include="MassTransit" Version="8.5.2" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
@@ -24,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MicroService\LLM\" />
     <Folder Include="MicroService\SignalR\" />
     <Folder Include="UI\coder-frontend\src\api\" />
     <Folder Include="UI\coder-frontend\src\auth\" />

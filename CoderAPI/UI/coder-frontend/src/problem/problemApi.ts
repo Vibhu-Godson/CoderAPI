@@ -1,11 +1,6 @@
+// src/features/problemApi.ts
 import { baseApi } from '../api/baseApi';
-import {
-    PROBLEM_LIST_API,
-    PROBLEM_DETAIL_API,
-    PROBLEM_NEW_SESSION_API,
-    PROBLEM_PROMPT_API,
-    PROBLEM_USER_SOLUTION_API,
-} from '../api/api_urls';
+import { API_URLS } from '../api/api_urls';
 
 export const problemApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -20,7 +15,7 @@ export const problemApi = baseApi.injectEndpoints({
             { pageNumber: number; pageSize: number; difficulty?: string; tags?: number[]; status?: string }
         >({
             query: ({ pageNumber, pageSize, ...body }) => ({
-                url: `${PROBLEM_LIST_API}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+                url: `${API_URLS.problem.list}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
                 method: 'POST',
                 body,
             }),
@@ -34,10 +29,16 @@ export const problemApi = baseApi.injectEndpoints({
                 difficultyLevel: string;
                 constraints: string;
                 tags: { value: string; topicId: number }[];
+                testCases: {
+                    testCaseId: number;
+                    input: string;
+                    expectedOutput: string;
+                    explaination: string;
+                }[];
             },
             number
         >({
-            query: (id) => PROBLEM_DETAIL_API(id),
+            query: (id) => API_URLS.problem.detail(id),
         }),
 
         newSession: builder.mutation<
@@ -45,7 +46,7 @@ export const problemApi = baseApi.injectEndpoints({
             number
         >({
             query: (problemId) => ({
-                url: `${PROBLEM_NEW_SESSION_API}?ProblemId=${problemId}`,
+                url: `${API_URLS.problem.newSession}?ProblemId=${problemId}`,
                 method: 'POST',
             }),
         }),
@@ -55,7 +56,7 @@ export const problemApi = baseApi.injectEndpoints({
             { problemId: number; userProblemSessionId: number; userText: string }
         >({
             query: (body) => ({
-                url: PROBLEM_PROMPT_API,
+                url: API_URLS.problem.prompt,
                 method: 'POST',
                 body,
             }),
@@ -73,7 +74,7 @@ export const problemApi = baseApi.injectEndpoints({
             }
         >({
             query: (body) => ({
-                url: PROBLEM_USER_SOLUTION_API,
+                url: API_URLS.problem.userSolution,
                 method: 'POST',
                 body,
             }),

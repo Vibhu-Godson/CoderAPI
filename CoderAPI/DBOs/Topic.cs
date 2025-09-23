@@ -12,7 +12,7 @@ public partial class Topic
     [Key]
     public long TopicId { get; set; }
 
-    public long LearningStageId { get; set; }
+    public long? LearningStageId { get; set; }
 
     [StringLength(255)]
     public string TopicName { get; set; } = null!;
@@ -35,10 +35,7 @@ public partial class Topic
 
     [ForeignKey("LearningStageId")]
     [InverseProperty("Topics")]
-    public virtual LearningStage LearningStage { get; set; } = null!;
-
-    [InverseProperty("Topic")]
-    public virtual ICollection<ProblemTopic> ProblemTopics { get; set; } = new List<ProblemTopic>();
+    public virtual LearningStage? LearningStage { get; set; }
 
     [InverseProperty("Topic")]
     public virtual ICollection<SubTopic> SubTopics { get; set; } = new List<SubTopic>();

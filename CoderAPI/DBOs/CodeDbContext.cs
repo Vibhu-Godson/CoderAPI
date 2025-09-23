@@ -19,9 +19,11 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<Problem> Problems { get; set; }
 
-    public virtual DbSet<ProblemTopic> ProblemTopics { get; set; }
+    public virtual DbSet<ProblemTag> ProblemTags { get; set; }
 
     public virtual DbSet<SubTopic> SubTopics { get; set; }
+
+    public virtual DbSet<Tag> Tags { get; set; }
 
     public virtual DbSet<TestCase> TestCases { get; set; }
 
@@ -41,10 +43,7 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserTestCaseResult> UserTestCaseResults { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;");
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<LearningStage>(entity =>
@@ -61,19 +60,17 @@ public partial class CodeDbContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
-        modelBuilder.Entity<ProblemTopic>(entity =>
+        modelBuilder.Entity<ProblemTag>(entity =>
         {
-            entity.HasKey(e => e.ProblemTopicId).HasName("PK__ProblemT__DCB1517AA81676F4");
+            entity.HasKey(e => e.ProblemTagId).HasName("PK__ProblemT__523EAD33480510AC");
 
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-
-            entity.HasOne(d => d.Problem).WithMany(p => p.ProblemTopics)
+            entity.HasOne(d => d.Problem).WithMany(p => p.ProblemTags)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProblemTo__Probl__4316F928");
+                .HasConstraintName("FK__ProblemTa__Probl__6754599E");
 
-            entity.HasOne(d => d.Topic).WithMany(p => p.ProblemTopics)
+            entity.HasOne(d => d.Tag).WithMany(p => p.ProblemTags)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProblemTo__Topic__440B1D61");
+                .HasConstraintName("FK__ProblemTa__TagId__66603565");
         });
 
         modelBuilder.Entity<SubTopic>(entity =>
@@ -85,6 +82,11 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Topic).WithMany(p => p.SubTopics)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__SubTopic__TopicI__31EC6D26");
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.TagId).HasName("PK__Tag__657CF9ACFD7D3E64");
         });
 
         modelBuilder.Entity<TestCase>(entity =>
@@ -106,9 +108,7 @@ public partial class CodeDbContext : DbContext
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasOne(d => d.LearningStage).WithMany(p => p.Topics)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Topic__LearningS__2E1BDC42");
+            entity.HasOne(d => d.LearningStage).WithMany(p => p.Topics).HasConstraintName("FK__Topic__LearningS__2E1BDC42");
         });
 
         modelBuilder.Entity<User>(entity =>

@@ -4,6 +4,8 @@ using CoderAPI.DBOs;
 using CoderAPI.Hubs;
 using CoderAPI.MicroService.Judge0.Implementation;
 using CoderAPI.MicroService.Judge0.Interface;
+using CoderAPI.MicroService.LLM.Implementation;
+using CoderAPI.MicroService.LLM.Interface;
 using CoderAPI.MicroService.Queue.Implementation;
 using CoderAPI.MicroService.Queue.Interface;
 using MassTransit;
@@ -101,6 +103,7 @@ builder.Services.Scan(scan => scan
 
 // Register Judge0Service with HttpClient properly
 builder.Services.AddHttpClient<IJudge0Service, Judge0Service>();
+builder.Services.AddHttpClient<IGeminiLLM, GeminiLLM>();
 
 // Register QueuePublisher explicitly
 builder.Services.AddScoped<IQueuePublisher, QueuePublisher>();

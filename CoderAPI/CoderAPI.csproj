@@ -29,6 +29,7 @@
     <Folder Include="UI\coder-frontend\src\api\" />
     <Folder Include="UI\coder-frontend\src\auth\" />
     <Folder Include="UI\coder-frontend\src\common\" />
+    <Folder Include="UI\coder-frontend\src\Service\" />
     <Folder Include="UI\coder-frontend\src\problem\components\" />
     <Folder Include="UI\coder-frontend\src\problem\pages\" />
   </ItemGroup>

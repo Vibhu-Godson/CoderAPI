@@ -23,8 +23,8 @@ namespace CoderAPI.MicroService.Judge0.Implementation
         {
             try
             {
-                var baseUrl = _config["Judge0:BaseUrl"];
-                var url = $"{baseUrl}/submission?base64_encoded=false&wait=true";
+                var baseUrl = _config["Judge:BaseUrl"];
+                var url = $"{baseUrl}/submissions?base64_encoded=false&wait=true";
 
                 var payload = new
                 {

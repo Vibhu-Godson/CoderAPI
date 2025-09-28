@@ -134,7 +134,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -146,9 +147,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowReactDev");
 app.MapHub<CodeExecutionHub>("/hubs/codeExecution");
 app.UseHttpsRedirection();
-app.UseCors("AllowReactDev");
 app.UseAuthorization();
 
 app.MapControllers();

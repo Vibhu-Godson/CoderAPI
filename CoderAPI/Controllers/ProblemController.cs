@@ -56,7 +56,7 @@ namespace CoderAPI.Controllers
         }
 
         [HttpPost("UserSolution")]
-        public async Task<ActionResult<StatusResponse>> RunCode(RunCodeRequest request)
+        public async Task<ActionResult<RunCodeResponse>> RunCode(RunCodeRequest request)
         {
             try
             {

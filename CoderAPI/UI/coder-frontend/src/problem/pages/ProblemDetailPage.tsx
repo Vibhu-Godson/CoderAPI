@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import Split from "react-split";
 import {
@@ -10,12 +10,35 @@ import {
 import ProblemDescription from "../components/ProblemDescription";
 import CodeEditorPanel from "../components/CodeEditorPanel";
 import AIChatPanel from "../components/AIChatPanel";
+import { signalRService } from "../../Service/signalRService";
+
+// --- DEBOUNCE UTILITY FUNCTION (Retained for Split) ---
+const debounce = (func: Function, delay: number) => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    return (...args: any[]) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func(...args);
+        }, delay);
+    };
+};
+// ------------------------------------------
+
+// Random starting messages for the AI chat
+const AI_START_MESSAGES = [
+    "What is your initial approach to solve this problem?",
+    "Before writing code, can you outline your strategy?",
+    "How do you plan to tackle the core logic of this problem?",
+    "Let's start with an explanation. What's your algorithm idea?",
+];
 
 export default function ProblemDetailPage() {
     const { id } = useParams<{ id: string }>();
     const problemId = Number(id);
 
-    // ✅ fetch problem first
+    // fetch problem first
     const { data: problem, isSuccess } = useGetProblemByIdQuery(problemId);
 
     const [startSession] = useNewSessionMutation();
@@ -27,40 +50,76 @@ export default function ProblemDetailPage() {
     const [userInput, setUserInput] = useState("");
     const [code, setCode] = useState("// Your solution here");
     const [editorLocked, setEditorLocked] = useState(true);
-    const [language, setLanguage] = useState("javascript"); // default
+    const [language, setLanguage] = useState("C"); // default
+    const [signalRConnected, setSignalRConnected] = useState(false);
 
-    // ✅ create session once after problem is successfully loaded
+    // --- Debounced Drag Handler (Retained) ---
+    const debouncedOnDrag = useRef(debounce(() => {
+        // Empty as the Monaco fix handles the layout
+    }, 50)).current;
+    // ------------------------------------------
+
+
+    // create session and add initial AI message once after problem is successfully loaded
     useEffect(() => {
         if (isSuccess && problem?.problemId && !sessionId) {
             (async () => {
                 try {
-                    const res = await startSession(problem.problemId).unwrap(); // ✅ pass number directly
-
+                    const res = await startSession(problem.problemId).unwrap();
                     if (res.status) {
                         setSessionId(res.userProblemSessionId);
-                        console.log("✅ Session started:", res.userProblemSessionId);
+                        console.log("Session started:", res.userProblemSessionId);
+
+                        // ADD INITIAL AI MESSAGE
+                        const randomMessage = AI_START_MESSAGES[Math.floor(Math.random() * AI_START_MESSAGES.length)];
+                        setChat([{ from: "ai", text: randomMessage }]);
+
+                        // connect SignalR and join session group
+                        try {
+                            await signalRService.connect();
+                            setSignalRConnected(signalRService.isConnected());
+                            await signalRService.joinSolutionGroup(res.userProblemSessionId);
+                            console.info("Joined session group", res.userProblemSessionId);
+                        } catch (err) {
+                            console.error("SignalR connect/join failed:", err);
+                            setSignalRConnected(false);
+                        }
                     } else {
-                        console.warn("⚠️ Failed to create session:", res.message);
+                        console.warn("Failed to create session:", res.message);
                     }
                 } catch (err) {
-                    console.error("❌ Error creating session:", err);
+                    console.error("Error creating session:", err);
                 }
             })();
         }
     }, [isSuccess, problem, startSession, sessionId]);
 
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            (async () => {
+                try {
+                    await signalRService.disconnect();
+                } catch (err) {
+                    // ignore
+                }
+            })();
+        };
+    }, []);
 
     const handleSend = async () => {
         if (!sessionId || !userInput.trim()) return;
 
         // add user message first
-        setChat((c) => [...c, { from: "user", text: userInput }]);
+        const userTextToSend = userInput; // Capture the current input
+        setChat((c) => [...c, { from: "user", text: userTextToSend }]);
+        setUserInput(""); // Clear the input immediately
 
         try {
             const res = await sendPrompt({
                 problemId,
                 userProblemSessionId: sessionId,
-                userText: userInput,
+                userText: userTextToSend,
             }).unwrap();
 
             // add AI response
@@ -70,16 +129,19 @@ export default function ProblemDetailPage() {
             ]);
 
             // unlock editor if AI says accuracy >= 50
-            if (res.accuracy >= 50) setEditorLocked(false);
+            if (res.accuracy >= 0.50) {
+                setEditorLocked(false);
+            }
         } catch (err) {
-            console.error("❌ Error sending prompt:", err);
-        } finally {
-            setUserInput("");
+            console.error("Error sending prompt:", err);
         }
     };
 
-    const handleRun = async () => {
-        if (!sessionId) return;
+    // wrapper that the CodeEditorPanel expects: returns { ok, message, userSolutionId? }
+    const wrappedRun = useCallback(async (): Promise<{ ok: boolean; message?: string; userSolutionId?: number }> => {
+        if (!sessionId) {
+            return { ok: false, message: "No session" };
+        }
         try {
             const res = await runOrSubmit({
                 userSolutionId: 0,
@@ -89,14 +151,21 @@ export default function ProblemDetailPage() {
                 language,
                 isSubmit: false,
             }).unwrap();
-            alert(res.message);
-        } catch (err) {
-            console.error("❌ Error running code:", err);
-        }
-    };
 
-    const handleSubmit = async () => {
-        if (!sessionId) return;
+            const userSolutionId = res.userSolutionId ?? undefined;
+            alert(res.message);
+
+            return { ok: res.status ?? true, message: res.message, userSolutionId };
+        } catch (err) {
+            console.error("Error running code:", err);
+            return { ok: false, message: "Run failed" };
+        }
+    }, [sessionId, code, language, problemId, runOrSubmit]);
+
+    const wrappedSubmit = useCallback(async (): Promise<{ ok: boolean; message?: string; userSolutionId?: number }> => {
+        if (!sessionId) {
+            return { ok: false, message: "No session" };
+        }
         try {
             const res = await runOrSubmit({
                 userSolutionId: 0,
@@ -106,11 +175,16 @@ export default function ProblemDetailPage() {
                 language,
                 isSubmit: true,
             }).unwrap();
+
+            const userSolutionId = res.userSolutionId ?? undefined;
             alert(res.message);
+
+            return { ok: res.status ?? true, message: res.message, userSolutionId };
         } catch (err) {
-            console.error("❌ Error submitting code:", err);
+            console.error("Error submitting code:", err);
+            return { ok: false, message: "Submit failed" };
         }
-    };
+    }, [sessionId, code, language, problemId, runOrSubmit]);
 
     return (
         <div className="container-fluid mt-3">
@@ -122,6 +196,7 @@ export default function ProblemDetailPage() {
                 gutterSize={6}
                 gutterAlign="center"
                 style={{ height: "85vh" }}
+                onDrag={debouncedOnDrag}
             >
                 <div className="p-3 bg-light overflow-auto">
                     <ProblemDescription problem={problem} />
@@ -131,12 +206,15 @@ export default function ProblemDetailPage() {
                     <CodeEditorPanel
                         code={code}
                         setCode={setCode}
-                        onRun={handleRun}
-                        onSubmit={handleSubmit}
+                        onRun={wrappedRun}
+                        onSubmit={wrappedSubmit}
                         editorLocked={editorLocked}
                         setEditorLocked={setEditorLocked}
                         language={language}
                         setLanguage={setLanguage}
+                        signalRConnected={signalRConnected}
+                        sessionId={sessionId}
+                        problemId={problemId}
                     />
                 </div>
 

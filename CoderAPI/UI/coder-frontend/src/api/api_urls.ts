@@ -20,4 +20,7 @@ export const API_URLS = {
     master: {
         topics: `${BASE_URL}/api/Master/Topics`,
     },
+    hub: {
+        submission: `${BASE_URL}/hubs/codeExecution`
+    }
 };

@@ -29,4 +29,8 @@
     {
         public long UserProblemSessionId { get; set; }
     }
+    public class RunCodeResponse : StatusResponse
+    {
+        public long UserSolutionId { get; set; }
+    }
 }

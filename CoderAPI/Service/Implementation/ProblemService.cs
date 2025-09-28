@@ -66,7 +66,7 @@ namespace CoderAPI.Service.Implementation
             }
         }
 
-        public async Task<StatusResponse> RunCode(RunCodeRequest request, long userId)
+        public async Task<RunCodeResponse> RunCode(RunCodeRequest request, long userId)
         {
             try
             {
@@ -79,6 +79,7 @@ namespace CoderAPI.Service.Implementation
                     UserSolutionCode = request.Code,
                     SelectedLanguage = request.Language,
                     StatusDescription = RunCodeStatus.Pending.ToString(),
+                    Result = RunCodeStatus.Pending.ToString(),
                     SubmissionDate = DateTime.UtcNow,
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
@@ -91,8 +92,6 @@ namespace CoderAPI.Service.Implementation
                 // Getting all test cases for the problem and publishing to the bus
                 var testCases = await _testCaseRepository.GetTestcasesByProblem(request.ProblemId, request.IsSubmit);
                 
-                await _hubContext.Groups.AddToGroupAsync(userId.ToString(), userSolution.UserSolutionId.ToString());
-
 
                 foreach (var tc in testCases)
                 {
@@ -115,17 +114,18 @@ namespace CoderAPI.Service.Implementation
                         Input = tc.TestCaseDetail,
                         ExpectedOutput = tc.ExpectedOutput,
                         UserSolutionId = userSolution.UserSolutionId,
+                        UserProblemSessionId = userSolution.UserProblemSessionId,
                         TestCaseId = tc.TestCaseId,
                     };
                     
                     await _bus.Publish(judgeRequest);
                 }
-                return new StatusResponse { Message = "Code is being processed", Status = true };
+                return new RunCodeResponse { Message = "Code is being processed", Status = true, UserSolutionId = userSolution.UserSolutionId };
             }
             catch(Exception ex)
             {
                 _logger.Log(LogLevel.Error, "ServerError: unable to run code", ex);
-                return new StatusResponse
+                return new RunCodeResponse
                 {
                     Message = "Failed to process the code",
                     Status = false

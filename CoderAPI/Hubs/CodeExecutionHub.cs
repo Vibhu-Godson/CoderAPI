@@ -9,9 +9,9 @@ namespace CoderAPI.Hubs
             // You can add custom logic here if needed when a client connects
             return base.OnConnectedAsync();
         }
-        public async Task JoinSolutionGroup(string userSolutionId)
+        public async Task JoinSolutionGroup(string userSessionId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, userSolutionId);
+            await Groups.AddToGroupAsync(Context.ConnectionId, userSessionId);
         }
     }
 }

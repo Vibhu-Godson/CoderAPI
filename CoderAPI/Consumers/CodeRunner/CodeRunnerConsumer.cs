@@ -42,11 +42,13 @@ namespace CoderAPI.Consumers.CodeRunner
                     result.CompileOutput
                 );
 
-                await _hubContext.Clients.Group(request.UserSolutionId.ToString())
+                await _hubContext.Clients.Group(request.UserProblemSessionId.ToString())
                     .SendAsync("ReceiveTestCaseResult", new
                     {
                         UserTestCaseResultId = userTestCaseResultId,
                         TestCaseId = request.TestCaseId,
+                        Input = request.Input,
+                        ExpectedOutput = request.ExpectedOutput,
                         Status = result.Status,
                         Stdout = result.Stdout,
                         Stderr = result.Stderr,
@@ -58,7 +60,7 @@ namespace CoderAPI.Consumers.CodeRunner
                 if (remaining == 0)
                 {
                     var status = await _userSolutionRepository.MarkUserSolutionCompleted(request.UserSolutionId);
-                    await _hubContext.Clients.Group(request.UserSolutionId.ToString())
+                    await _hubContext.Clients.Group(request.UserProblemSessionId.ToString())
                         .SendAsync("ExecutionCompleted", new
                         {
                             UserSolutionId = request.UserSolutionId,

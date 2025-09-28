@@ -63,7 +63,7 @@ export const problemApi = baseApi.injectEndpoints({
         }),
 
         runOrSubmitSolution: builder.mutation<
-            { status: boolean; message: string },
+            { status: boolean; message: string; userSolutionId : number },
             {
                 userSolutionId: number;
                 userProblemSessionId: number;

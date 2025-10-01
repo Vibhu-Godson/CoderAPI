@@ -33,6 +33,9 @@ public partial class Topic
 
     public long? UpdatedBy { get; set; }
 
+    [InverseProperty("Topic")]
+    public virtual ICollection<CourseTopic> CourseTopics { get; set; } = new List<CourseTopic>();
+
     [ForeignKey("LearningStageId")]
     [InverseProperty("Topics")]
     public virtual LearningStage? LearningStage { get; set; }

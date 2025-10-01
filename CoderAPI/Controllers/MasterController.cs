@@ -1,5 +1,5 @@
 ﻿using CoderAPI.DTOs;
-using CoderAPI.DTOs.Master;
+using CoderAPI.DTOs.Course;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

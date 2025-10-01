@@ -15,11 +15,17 @@ public partial class CodeDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Course> Courses { get; set; }
+
+    public virtual DbSet<CourseTopic> CourseTopics { get; set; }
+
     public virtual DbSet<LearningStage> LearningStages { get; set; }
 
     public virtual DbSet<Problem> Problems { get; set; }
 
     public virtual DbSet<ProblemTag> ProblemTags { get; set; }
+
+    public virtual DbSet<QuizQuestion> QuizQuestions { get; set; }
 
     public virtual DbSet<SubTopic> SubTopics { get; set; }
 
@@ -30,6 +36,8 @@ public partial class CodeDbContext : DbContext
     public virtual DbSet<Topic> Topics { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserCourse> UserCourses { get; set; }
 
     public virtual DbSet<UserNote> UserNotes { get; set; }
 
@@ -46,6 +54,30 @@ public partial class CodeDbContext : DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Course>(entity =>
+        {
+            entity.HasKey(e => e.CourseId).HasName("PK__Course__C92D71A77439DCC8");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<CourseTopic>(entity =>
+        {
+            entity.HasKey(e => e.CourseTopicId).HasName("PK__CourseTo__0E466DF38B705131");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Course).WithMany(p => p.CourseTopics)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CourseTop__Cours__778AC167");
+
+            entity.HasOne(d => d.Topic).WithMany(p => p.CourseTopics)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CourseTop__Topic__787EE5A0");
+        });
+
         modelBuilder.Entity<LearningStage>(entity =>
         {
             entity.HasKey(e => e.LearningStageId).HasName("PK__Learning__49320B573F39258D");
@@ -71,6 +103,15 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Tag).WithMany(p => p.ProblemTags)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__ProblemTa__TagId__66603565");
+        });
+
+        modelBuilder.Entity<QuizQuestion>(entity =>
+        {
+            entity.HasKey(e => e.QuestionId).HasName("PK__QuizQues__0DC06FAC98D01536");
+
+            entity.HasOne(d => d.SubTopic).WithMany(p => p.QuizQuestions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__QuizQuest__SubTo__0B91BA14");
         });
 
         modelBuilder.Entity<SubTopic>(entity =>
@@ -116,6 +157,20 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C4B32AD15");
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<UserCourse>(entity =>
+        {
+            entity.HasKey(e => e.UserCourseId).HasName("PK__UserCour__58886ED4C0868E6F");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ProgressStatus).HasDefaultValue("Not Started");
+            entity.Property(e => e.PurchaseDate).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.UserCourses)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserCourses_Course");
         });
 
         modelBuilder.Entity<UserNote>(entity =>
@@ -190,6 +245,8 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.SubTopic).WithMany(p => p.UserSubTopics)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserSubTo__SubTo__36B12243");
+
+            entity.HasOne(d => d.UserCourse).WithMany(p => p.UserSubTopics).HasConstraintName("FK__UserSubTo__UserC__08B54D69");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserSubTopics)
                 .OnDelete(DeleteBehavior.ClientSetNull)

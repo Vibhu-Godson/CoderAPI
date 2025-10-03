@@ -1,14 +1,15 @@
-﻿using CoderAPI.Service.Interface;
-using CoderAPI.Helper.Interface;
-using CoderAPI.Repository.Interface;
+﻿using CoderAPI.DBOs;
 using CoderAPI.DTOs;
-using CoderAPI.Messages;
-using CoderAPI.DBOs;
-using CoderAPI.Enum;
-using MassTransit;
 using CoderAPI.DTOs.codeRunner;
-using Microsoft.AspNetCore.SignalR;
+using CoderAPI.Enum;
+using CoderAPI.Helper.Interface;
 using CoderAPI.Hubs;
+using CoderAPI.Messages;
+using CoderAPI.Repository.Interface;
+using CoderAPI.Service.Interface;
+using MassTransit;
+using Microsoft.AspNetCore.SignalR;
+using static MassTransit.ValidationResultExtensions;
 
 namespace CoderAPI.Service.Implementation
 {
@@ -66,6 +67,24 @@ namespace CoderAPI.Service.Implementation
             }
         }
 
+        public async Task<StatusResponse> MarkUserSessionComplete(long UserSessionId, long userId)
+        {
+            try
+            {
+                var status = await _userProblemSessionRepository.MarkUserSessionComplete(UserSessionId, userId);
+                return new StatusResponse
+                {
+                    Status = status,
+                    Message = "User Solution Marked completed..!"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to mark user session complete for userSessionId: {UserSessionId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
         public async Task<RunCodeResponse> RunCode(RunCodeRequest request, long userId)
         {
             try
@@ -84,6 +103,7 @@ namespace CoderAPI.Service.Implementation
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
                     IsActive = true,
+                    IsSubmit = request.IsSubmit,
                 };
                 userSolution.UserSolutionId = await _userSolutionRepository.AddUserSolution(userSolution);
 
@@ -104,8 +124,22 @@ namespace CoderAPI.Service.Implementation
                         CreatedBy = userId,
                         CreatedOn = DateTime.UtcNow,
                     };
-                    await _testCaseRepository.AddUserTestCaseResult(userTestCaseResult);
+                    var userTestCaseResultId = await _testCaseRepository.AddUserTestCaseResult(userTestCaseResult);
 
+                    await _hubContext.Clients.Group(request.UserProblemSessionId.ToString())
+                    .SendAsync("ReceiveTestCaseResult", new
+                    {
+                        UserTestCaseResultId = userTestCaseResultId,
+                        TestCaseId = tc.TestCaseId,
+                        Input = tc.TestCaseDetail,
+                        ExpectedOutput = tc.ExpectedOutput,
+                        Status = RunCodeStatus.Pending,
+                        Stdout = "",
+                        Stderr = "",
+                        CompileOutput = "",
+                        ExecutionTime = "",
+                        MemoryUsed = ""
+                    });
                     // adding testcases into queue for independent execution 
                     var judgeRequest = new Judge0CodeRunRequest
                     {

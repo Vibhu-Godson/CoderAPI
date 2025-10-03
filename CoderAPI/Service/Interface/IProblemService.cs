@@ -9,5 +9,6 @@ namespace CoderAPI.Service.Interface
         Task<ProblemDto> GetProblemById(long problemId);
         Task<RunCodeResponse> RunCode(RunCodeRequest request, long userId);
         Task<CreateUserSessionResponse> StartNewUserProblemSession(long ProblemId, long userId);
+        Task<StatusResponse> MarkUserSessionComplete(long UserSessionId, long userId);
     }
 }

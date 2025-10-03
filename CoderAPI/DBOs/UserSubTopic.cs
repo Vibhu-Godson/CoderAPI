@@ -34,6 +34,8 @@ public partial class UserSubTopic
 
     public long? UpdatedBy { get; set; }
 
+    public long? UserCourseId { get; set; }
+
     [ForeignKey("SubTopicId")]
     [InverseProperty("UserSubTopics")]
     public virtual SubTopic SubTopic { get; set; } = null!;
@@ -41,4 +43,8 @@ public partial class UserSubTopic
     [ForeignKey("UserId")]
     [InverseProperty("UserSubTopics")]
     public virtual User User { get; set; } = null!;
+
+    [ForeignKey("UserCourseId")]
+    [InverseProperty("UserSubTopics")]
+    public virtual UserCourse? UserCourse { get; set; }
 }

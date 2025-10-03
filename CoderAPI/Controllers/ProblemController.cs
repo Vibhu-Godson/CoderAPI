@@ -99,5 +99,21 @@ namespace CoderAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("CompleteSession")]
+        public async Task<ActionResult<StatusResponse>> MarkUserSessionComplete(long userSessionId)
+        {
+            try
+            {
+                var userId = Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var response = await _problemService.MarkUserSessionComplete(userSessionId, userId);
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"unable to mark usersession complete..!", ex);
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

@@ -53,13 +53,29 @@ export const problemApi = baseApi.injectEndpoints({
 
         sendPrompt: builder.mutation<
             { message: string; accuracy: number },
-            { problemId: number; userProblemSessionId: number; userText: string }
+            {
+                problemId: number;
+                userProblemSessionId: number;
+                userText: string;
+                userSolutionId?: number;
+                isAfterSubmit?: boolean; 
+            }
         >({
             query: (body) => ({
                 url: API_URLS.problem.prompt,
                 method: 'POST',
                 body,
             }),
+        }),
+
+        completeSession: builder.mutation <
+            { status: boolean; message: string },
+            { userSessionId: number }
+        >({
+            query: ({ userSessionId }) => ({
+                url: API_URLS.problem.completeSession(userSessionId),
+                method: 'POST'
+            })
         }),
 
         runOrSubmitSolution: builder.mutation<
@@ -87,5 +103,6 @@ export const {
     useGetProblemByIdQuery,
     useNewSessionMutation,
     useSendPromptMutation,
+    useCompleteSessionMutation,
     useRunOrSubmitSolutionMutation,
 } = problemApi;

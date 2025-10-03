@@ -6,6 +6,7 @@ import {
     useNewSessionMutation,
     useSendPromptMutation,
     useRunOrSubmitSolutionMutation,
+    useCompleteSessionMutation,
 } from "../problemApi";
 import ProblemDescription from "../components/ProblemDescription";
 import CodeEditorPanel from "../components/CodeEditorPanel";
@@ -42,8 +43,10 @@ export default function ProblemDetailPage() {
     const { data: problem, isSuccess } = useGetProblemByIdQuery(problemId);
 
     const [startSession] = useNewSessionMutation();
+    const [completeSession] = useCompleteSessionMutation();
     const [sendPrompt] = useSendPromptMutation();
     const [runOrSubmit] = useRunOrSubmitSolutionMutation();
+    const [lastSubmittedSolutionId, setLastSubmittedSolutionId] = useState<number | null>(null);
 
     const [sessionId, setSessionId] = useState<number | null>(null);
     const [chat, setChat] = useState<{ from: "ai" | "user"; text: string }[]>([]);
@@ -107,19 +110,44 @@ export default function ProblemDetailPage() {
         };
     }, []);
 
+    useEffect(() => {
+        const handler = (e: any) => {
+            const { userSolutionId } = e.detail || {};
+            setChat(c => [
+                ...c,
+                {
+                    from: "user",
+                    text: "code submitted"
+                },
+                {
+                    from: "ai",
+                    text: "Great job! Can you now explain your solution step by step, so I can verify your reasoning?"
+                }
+            ]);
+            if (userSolutionId) {
+                setLastSubmittedSolutionId(userSolutionId);
+            }
+        };
+
+        window.addEventListener("ai-request-explanation", handler);
+        return () => window.removeEventListener("ai-request-explanation", handler);
+    }, []);
+
     const handleSend = async () => {
         if (!sessionId || !userInput.trim()) return;
 
         // add user message first
         const userTextToSend = userInput; // Capture the current input
         setChat((c) => [...c, { from: "user", text: userTextToSend }]);
-        setUserInput(""); // Clear the input immediately
+        setUserInput(""); 
 
         try {
             const res = await sendPrompt({
                 problemId,
                 userProblemSessionId: sessionId,
                 userText: userTextToSend,
+                userSolutionId: lastSubmittedSolutionId ?? undefined,
+                isAfterSubmit: !!lastSubmittedSolutionId
             }).unwrap();
 
             // add AI response
@@ -131,6 +159,14 @@ export default function ProblemDetailPage() {
             // unlock editor if AI says accuracy >= 50
             if (res.accuracy >= 0.50) {
                 setEditorLocked(false);
+            }
+            if (res.accuracy >= 0.82 && !!lastSubmittedSolutionId) {
+                try {
+                    await completeSession({ userSessionId: sessionId }).unwrap();
+                    alert("✅ Session marked as completed");
+                } catch (err) {
+                    console.error("❌ Failed to complete session", err);
+                }
             }
         } catch (err) {
             console.error("Error sending prompt:", err);

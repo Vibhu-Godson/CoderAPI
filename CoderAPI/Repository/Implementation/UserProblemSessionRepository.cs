@@ -41,5 +41,23 @@ namespace CoderAPI.Repository.Implementation
                 throw;
             }
         }
+
+        public async Task<bool> MarkUserSessionComplete(long userSessionId, long userId)
+        {
+            try
+            {
+                var userSession = await _context.UserProblemSessions.FindAsync(userSessionId);
+                userSession.SessionStatus = SessionStatus.Completed.ToString();
+                userSession.UpdatedOn = DateTime.UtcNow;
+                userSession.UpdatedBy = userId;
+                var ok = await _context.SaveChangesAsync();
+                return (ok > 0 ? true : false);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to mark userSession Complete with userSessionId: {userSessionId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

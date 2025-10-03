@@ -223,6 +223,19 @@ export default function CodeEditorPanel({
 
         const unsubExec = signalRService.onExecutionCompleted((payload: ExecutionCompletedPayload) => {
             console.info("ExecutionCompleted", payload);
+            // Show status in UI
+            if (payload.status) {
+                alert(`Final Verdict: ${payload.status}`);
+            }
+
+            // If Accepted -> trigger AI follow-up
+            if (payload.status === "Accepted") {
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent("ai-request-explanation", {
+                        detail: {userSolutionId: payload.userSolutionId}
+                    }));
+                }, 500);
+            }
         });
 
         return () => {

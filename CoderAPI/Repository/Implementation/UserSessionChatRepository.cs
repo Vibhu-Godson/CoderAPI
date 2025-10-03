@@ -42,6 +42,7 @@ namespace CoderAPI.Repository.Implementation
                     {
                         ChatMessage = ch.ChatMessage,
                         AiReply = ch.AiReply,
+                        IsAfterSubmit = ch.IsAfterSubmit
                     })
                     .ToListAsync();
                 return response;

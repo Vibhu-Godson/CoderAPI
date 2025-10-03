@@ -6,7 +6,9 @@ namespace CoderAPI.Messages
     {
         public long ProblemId { get; set; }
         public long UserProblemSessionId { get; set; }
+        public long UserSolutionId { get; set; }
         public string UserText { get; set; }
+        public bool IsAfterSubmit { get; set; }
     }
     public class LLMResponse
     {

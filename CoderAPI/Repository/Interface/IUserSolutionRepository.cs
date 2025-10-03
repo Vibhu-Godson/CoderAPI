@@ -5,6 +5,7 @@ namespace CoderAPI.Repository.Interface
     public interface IUserSolutionRepository
     {
         Task<long> AddUserSolution(UserSolution solution);
-        Task<string> MarkUserSolutionCompleted(long userSolutionId);
+        Task<(bool,string)> MarkUserSolutionCompleted(long userSolutionId);
+        Task<string> GetCodeByUserSolutionId(long userSolutionId);
     }
 }

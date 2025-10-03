@@ -16,6 +16,7 @@ export const API_URLS = {
         newSession: `${BASE_URL}/api/Problem/NewSession`,
         prompt: `${BASE_URL}/api/Problem/Promt`,
         userSolution: `${BASE_URL}/api/Problem/UserSolution`,
+        completeSession: (id: number) => `${BASE_URL}/api/Problem/CompleteSession?userSessionId=${id}`,
     },
     master: {
         topics: `${BASE_URL}/api/Master/Topics`,

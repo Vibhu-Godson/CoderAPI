@@ -49,7 +49,7 @@ namespace CoderAPI.Repository.Implementation
             }
         }
 
-        public async Task<(long, int)> UpdateUserTestCaseResult(long userSolutionId, long TestCaseId, string status, string stdout, string stderr, string compileOutput)
+        public async Task<(long, int)> UpdateUserTestCaseResult(long userSolutionId, long TestCaseId, string status, string stdout, string stderr, string compileOutput, double? ExecutionTime, long? MemoryUsed)
         {
             try
             {
@@ -60,6 +60,8 @@ namespace CoderAPI.Repository.Implementation
                 userTestCase.Stdout = stdout;
                 userTestCase.Stderr = stderr;
                 userTestCase.CompileOutput = compileOutput;
+                userTestCase.ExecutionTime = ExecutionTime;
+                userTestCase.MemoryUsed = MemoryUsed;
                 userTestCase.UpdatedOn = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
                 return (userTestCase.UserTestCaseResultId, await TotalPendingTestCaseByUserSolution(userSolutionId));
@@ -72,6 +74,7 @@ namespace CoderAPI.Repository.Implementation
         }
 
         private async Task<int> TotalPendingTestCaseByUserSolution(long UserSolutionId) =>
-            await _context.UserTestCaseResults.CountAsync(utc => utc.Status == RunCodeStatus.Pending.ToString());
+            await _context.UserTestCaseResults.
+            CountAsync(utc => utc.Status == RunCodeStatus.Pending.ToString() && utc.UserSolutionId==UserSolutionId);
     }
 }

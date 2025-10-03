@@ -39,7 +39,9 @@ namespace CoderAPI.Consumers.CodeRunner
                     result.Status,
                     result.Stdout,
                     result.Stderr,
-                    result.CompileOutput
+                    result.CompileOutput,
+                    result.ExecutionTime,
+                    result.MemoryUsed
                 );
 
                 await _hubContext.Clients.Group(request.UserProblemSessionId.ToString())
@@ -60,11 +62,12 @@ namespace CoderAPI.Consumers.CodeRunner
                 if (remaining == 0)
                 {
                     var status = await _userSolutionRepository.MarkUserSolutionCompleted(request.UserSolutionId);
+                    if(status.Item1)
                     await _hubContext.Clients.Group(request.UserProblemSessionId.ToString())
                         .SendAsync("ExecutionCompleted", new
                         {
                             UserSolutionId = request.UserSolutionId,
-                            Status = status
+                            Status = status.Item2
                         });
                 }
             }

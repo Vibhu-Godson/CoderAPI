@@ -3,5 +3,6 @@
     public interface IUserProblemSessionRepository
     {
         Task<long> CreateUserProblemSession(long ProblemId, long userId);
+        Task<bool> MarkUserSessionComplete(long userSessionId, long userId);
     }
 }

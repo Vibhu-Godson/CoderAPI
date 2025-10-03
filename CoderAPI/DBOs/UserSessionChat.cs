@@ -57,6 +57,8 @@ public partial class UserSessionChat
     [StringLength(1500)]
     public string? AiExplaination { get; set; }
 
+    public bool IsAfterSubmit { get; set; }
+
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSessionChats")]
     public virtual UserProblemSession UserProblemSession { get; set; } = null!;

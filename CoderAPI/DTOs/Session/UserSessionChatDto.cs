@@ -30,5 +30,6 @@ namespace CoderAPI.DTOs.Session
         public string? AiReply { get; set; }
 
         public string? AiExplaination { get; set; }
+        public bool IsAfterSubmit { get; set; }
     }
 }

@@ -7,5 +7,6 @@ namespace CoderAPI.Repository.Interface
     {
         Task<List<UserSessionChatDto>> GetSessionChat(long UserProblemSessionId);
         Task<long> AddUserSessionChat(UserSessionChat userSessionChat);
+        Task<bool> CanChat(long userId);
     }
 }

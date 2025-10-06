@@ -11,7 +11,7 @@ namespace CoderAPI.Helper.Implementation
         private readonly IConfiguration _config;
         public JwtHelper(IConfiguration config) => _config = config;
 
-        public string GenerateToken(long userId, string phone)
+        public string GenerateToken(long userId, string phone, string subscriptionLevel, DateTime? subscriptionExpiry)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -19,7 +19,9 @@ namespace CoderAPI.Helper.Implementation
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, phone) // optional, maps to User.Identity.Name
+                new Claim(ClaimTypes.Name, phone ?? string.Empty),
+                new Claim("subscription", subscriptionLevel ?? "Free"),
+                new Claim("subscriptionExpiry", subscriptionExpiry?.ToUniversalTime().ToString("o") ?? string.Empty)
             };
 
             var token = new JwtSecurityToken(

@@ -10,6 +10,7 @@ namespace CoderAPI.DTOs
         public string ProblemDetail { get; set; }
         public string DifficultyLevel { get; set; }
         public string Constraints { get; set; }
+        public bool IsLocked { get; set; }
         public List<TagString> Tags { get; set; }
         public List<TestCaseDto> TestCases { get; set; }
     }

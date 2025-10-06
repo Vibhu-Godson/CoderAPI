@@ -59,6 +59,8 @@ public partial class UserSessionChat
 
     public bool IsAfterSubmit { get; set; }
 
+    public long? UserId { get; set; }
+
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSessionChats")]
     public virtual UserProblemSession UserProblemSession { get; set; } = null!;

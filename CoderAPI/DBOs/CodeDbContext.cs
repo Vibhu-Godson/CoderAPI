@@ -19,7 +19,13 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<CourseTopic> CourseTopics { get; set; }
 
+    public virtual DbSet<Feature> Features { get; set; }
+
     public virtual DbSet<LearningStage> LearningStages { get; set; }
+
+    public virtual DbSet<PlanFeature> PlanFeatures { get; set; }
+
+    public virtual DbSet<Plann> Planns { get; set; }
 
     public virtual DbSet<Problem> Problems { get; set; }
 
@@ -41,6 +47,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserNote> UserNotes { get; set; }
 
+    public virtual DbSet<UserPlan> UserPlans { get; set; }
+
     public virtual DbSet<UserProblemSession> UserProblemSessions { get; set; }
 
     public virtual DbSet<UserSessionChat> UserSessionChats { get; set; }
@@ -51,7 +59,10 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserTestCaseResult> UserTestCaseResults { get; set; }
 
-    
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Course>(entity =>
@@ -78,10 +89,42 @@ public partial class CodeDbContext : DbContext
                 .HasConstraintName("FK__CourseTop__Topic__787EE5A0");
         });
 
+        modelBuilder.Entity<Feature>(entity =>
+        {
+            entity.HasKey(e => e.FeatureId).HasName("PK__Feature__82230BC9342B82C9");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
         modelBuilder.Entity<LearningStage>(entity =>
         {
             entity.HasKey(e => e.LearningStageId).HasName("PK__Learning__49320B573F39258D");
 
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<PlanFeature>(entity =>
+        {
+            entity.HasKey(e => e.PlanFeatureId).HasName("PK__PlanFeat__4523949CA67E3D04");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Feature).WithMany(p => p.PlanFeatures)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PlanFeatu__Featu__19DFD96B");
+
+            entity.HasOne(d => d.Plan).WithMany(p => p.PlanFeatures)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PlanFeatu__PlanI__18EBB532");
+        });
+
+        modelBuilder.Entity<Plann>(entity =>
+        {
+            entity.HasKey(e => e.PlanId).HasName("PK__Plann__755C22B7368E6764");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
@@ -90,6 +133,7 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.ProblemId).HasName("PK__Problem__5CED528A45586B6C");
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsLocked).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<ProblemTag>(entity =>
@@ -187,6 +231,19 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserNotes)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserNotes__UserI__3A81B327");
+        });
+
+        modelBuilder.Entity<UserPlan>(entity =>
+        {
+            entity.HasKey(e => e.UserPlanId).HasName("PK__UserPlan__B2231FE1E6D0C83B");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.StartDate).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Plan).WithMany(p => p.UserPlans)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserPlan__PlanId__1EA48E88");
         });
 
         modelBuilder.Entity<UserProblemSession>(entity =>

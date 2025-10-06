@@ -32,6 +32,22 @@ namespace CoderAPI.Repository.Implementation
             }
         }
 
+        public async Task<bool> CanChat(long userId)
+        {
+            try
+            {
+                var totalChat = await _context.UserSessionChats
+                    .CountAsync(uc => uc.UserId == userId && uc.CreatedOn.Date == DateTime.UtcNow.Date);
+
+                return totalChat < 10;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to check can chat for userId: {userId}", ex);
+                throw;
+            }
+        }
+
         public async Task<List<UserSessionChatDto>> GetSessionChat(long UserProblemSessionId)
         {
             try

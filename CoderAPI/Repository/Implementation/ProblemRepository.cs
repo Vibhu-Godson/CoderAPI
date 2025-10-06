@@ -55,6 +55,7 @@ namespace CoderAPI.Repository.Implementation
                     Constraints = problem.Constraints ?? "",
                     ProblemDetail = problem.ProblemDetail,
                     DifficultyLevel = problem.DifficultyLevel,
+                    IsLocked = problem.IsLocked ?? false,
                     Tags = _context.ProblemTags
                         .Where(pt => pt.ProblemId == ProblemId)
                         .Select(pt => new TagString

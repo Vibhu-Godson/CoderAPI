@@ -3,6 +3,7 @@ using CoderAPI.Helper;
 using CoderAPI.Helper.Interface;
 using CoderAPI.Repository.Interface;
 using CoderAPI.Service.Interface;
+using MassTransit.Courier.Contracts;
 
 namespace CoderAPI.Service.Implementation
 {
@@ -10,13 +11,15 @@ namespace CoderAPI.Service.Implementation
     {
         private readonly IJwtHelper _jwtHelper;
         private readonly IUserRepository _userRepository;
+        private readonly IUserPlanRepository _userPlanRepository;
         private readonly ICustomLogger _logger;
 
-        public AuthService(IJwtHelper jwtHelper, IUserRepository userRepository, ICustomLogger logger)
+        public AuthService(IJwtHelper jwtHelper, IUserRepository userRepository, ICustomLogger logger, IUserPlanRepository userPlanRepository)
         {
             _jwtHelper = jwtHelper;
             _userRepository = userRepository;
             _logger = logger;
+            _userPlanRepository = userPlanRepository;
         }
 
         public async Task<LoginResponse> Login(LoginRequest request)
@@ -54,7 +57,8 @@ namespace CoderAPI.Service.Implementation
                         UserName = ""
                     };
                 }
-                var token = _jwtHelper.GenerateToken(user.UserId, user.UserName);
+                var subscription = await _userPlanRepository.GetUserPlanLevelAndExpiry(user.UserId);
+                var token = _jwtHelper.GenerateToken(user.UserId, user.UserName, subscription.Item1,subscription.Item2);
                 return new LoginResponse
                 {
                     Status = true,

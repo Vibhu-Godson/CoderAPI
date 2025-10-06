@@ -7,6 +7,7 @@
         public string URL { get; set; }
         public List<string> Tags { get; set; }
         public string UserStatus { get; set; }
+        public bool IsLocked { get; set; }
     }
     public class ProblemQuery
     {

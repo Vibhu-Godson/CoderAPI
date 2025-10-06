@@ -73,7 +73,7 @@ Output strictly in JSON with the following format:
   }},
   ""summary_of_explanation"": ""<one-line summary of how well the user explained their approach>""
 }}
-Note: if you get average of correctness, clarity, completeness and alignment > 0.82 then make your reply as a closing statement. you can defenately ask more question if it is required
+Note: if you get average of correctness, clarity, completeness and alignment > 0.80 then make your reply as a closing statement. you can defenately ask more question if it is required
 but you must appreciate and say that the question is completed now for you see you in next question 'Happy Coding..!'
 ";
                 }
@@ -166,6 +166,19 @@ Output strictly in JSON with the following format:
             catch(Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"ServerError: unable to process AiChat request.", ex);
+                throw;
+            }
+        }
+
+        public async Task<bool> CanChat(long userId)
+        {
+            try
+            {
+                return await _userSessionChatRepository.CanChat(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to check can chat for userId: {userId}", ex);
                 throw;
             }
         }

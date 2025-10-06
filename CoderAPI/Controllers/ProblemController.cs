@@ -15,13 +15,15 @@ namespace CoderAPI.Controllers
     {
         private readonly IProblemService _problemService;
         private readonly IAiAnalysisService _aiAnalysisService;
+        private readonly ISubscriptionHelper _subscriptionHelper;
         private readonly ICustomLogger _logger;
 
-        public ProblemController(IProblemService problemService, ICustomLogger logger, IAiAnalysisService aiAnalysisService)
+        public ProblemController(IProblemService problemService, ICustomLogger logger, IAiAnalysisService aiAnalysisService, ISubscriptionHelper subscriptionHelper)
         {
             _problemService = problemService;
             _logger = logger;
             _aiAnalysisService = aiAnalysisService;
+            _subscriptionHelper = subscriptionHelper;
         }
 
         [HttpPost()]
@@ -46,6 +48,10 @@ namespace CoderAPI.Controllers
             try
             {
                 var response = await _problemService.GetProblemById(ProblemId);
+                if(response.IsLocked && !_subscriptionHelper.isPremiumUser(User))
+                {
+                    return Forbid("Problem is locked. Please upgrade to a premium plan to access this problem.");
+                }
                 return Ok(response);
             }
             catch (Exception ex)
@@ -90,6 +96,11 @@ namespace CoderAPI.Controllers
         {
             try
             {
+                var userId = Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                if (_subscriptionHelper.isFreeUser(User) && !(await _aiAnalysisService.CanChat(userId)))
+                {
+                    return Forbid("This feature is available for premium users only. Please upgrade to a premium plan to access this feature.");
+                }
                 var response = await _aiAnalysisService.AiChat(request);
                 return Ok(response);
             }

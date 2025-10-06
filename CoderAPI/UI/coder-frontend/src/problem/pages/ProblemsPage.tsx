@@ -58,24 +58,36 @@ export default function ProblemsPage() {
                         </thead>
                         <tbody>
                             {data.items.map((p) => (
-                                <tr key={p.problemId}>
+                                <tr key={p.problemId} className={p.isLocked ? 'opacity-50' : ''}>
                                     <td>
-                                        <Link to={`/problems/${p.problemId}`} className="text-decoration-none">
-                                            {p.problemName}
-                                        </Link>
+                                        {p.isLocked ? (
+                                            <div className="d-flex align-items-center text-muted">
+                                                <i className="bi bi-lock-fill me-2"></i>
+                                                {p.problemName}
+                                            </div>
+                                        ) : (
+                                            <Link to={`/problems/${p.problemId}`} className="text-decoration-none">
+                                                {p.problemName}
+                                            </Link>
+                                        )}
                                     </td>
                                     <td>{p.tags.join(', ')}</td>
                                     <td>
-                                        <span className={`badge ${p.userStatus === 'Solved' ? 'bg-success' :
-                                                p.userStatus === 'InProgress' ? 'bg-warning text-dark' :
-                                                    'bg-secondary'
-                                            }`}>
+                                        <span
+                                            className={`badge ${p.userStatus === 'Solved'
+                                                    ? 'bg-success'
+                                                    : p.userStatus === 'InProgress'
+                                                        ? 'bg-warning text-dark'
+                                                        : 'bg-secondary'
+                                                }`}
+                                        >
                                             {p.userStatus}
                                         </span>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
+
                     </table>
                 </div>
             )}

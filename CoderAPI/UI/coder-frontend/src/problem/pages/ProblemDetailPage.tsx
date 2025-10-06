@@ -12,6 +12,7 @@ import ProblemDescription from "../components/ProblemDescription";
 import CodeEditorPanel from "../components/CodeEditorPanel";
 import AIChatPanel from "../components/AIChatPanel";
 import { signalRService } from "../../Service/signalRService";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 // --- DEBOUNCE UTILITY FUNCTION (Retained for Split) ---
 const debounce = (func: Function, delay: number) => {
@@ -40,8 +41,14 @@ export default function ProblemDetailPage() {
     const problemId = Number(id);
 
     // fetch problem first
-    const { data: problem, isSuccess } = useGetProblemByIdQuery(problemId);
-
+    const {
+        data: problem,
+        error,
+        isError,
+        isLoading,
+        isSuccess,
+    } = useGetProblemByIdQuery(problemId);
+    const [isLocked, setIsLocked] = useState(false);
     const [startSession] = useNewSessionMutation();
     const [completeSession] = useCompleteSessionMutation();
     const [sendPrompt] = useSendPromptMutation();
@@ -62,10 +69,16 @@ export default function ProblemDetailPage() {
     }, 50)).current;
     // ------------------------------------------
 
-
+    useEffect(() => {
+        if (isError && "status" in error && error.status === 403) {
+            const errMsg = (error as any)?.data?.message || "Problem is locked.";
+            console.warn("Locked Problem:", errMsg);
+            setIsLocked(true);
+        }
+    }, [isError, error]);
     // create session and add initial AI message once after problem is successfully loaded
     useEffect(() => {
-        if (isSuccess && problem?.problemId && !sessionId) {
+        if (isSuccess && problem?.problemId && !sessionId && !problem.isLocked) {
             (async () => {
                 try {
                     const res = await startSession(problem.problemId).unwrap();
@@ -221,6 +234,27 @@ export default function ProblemDetailPage() {
             return { ok: false, message: "Submit failed" };
         }
     }, [sessionId, code, language, problemId, runOrSubmit]);
+
+    if (isLoading) return <LoadingSpinner />;
+
+    if (isLocked) {
+        return (
+            <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: '80vh' }}>
+                <i className="bi bi-lock-fill display-1 text-secondary mb-3"></i>
+                <h3 className="text-muted">This problem is locked</h3>
+                <p className="text-center text-secondary" style={{ maxWidth: '500px' }}>
+                    This problem is available only to premium members.
+                    Upgrade your membership to unlock and start solving this problem.
+                </p>
+                <button className="btn btn-primary mt-3">
+                    Upgrade to Premium
+                </button>
+            </div>
+        );
+    }
+    if (isError) {
+        return <div>Something went wrong while loading the problem.</div>;
+    }
 
     return (
         <div className="container-fluid mt-3">

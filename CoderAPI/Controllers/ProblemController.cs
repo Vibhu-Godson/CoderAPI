@@ -50,7 +50,10 @@ namespace CoderAPI.Controllers
                 var response = await _problemService.GetProblemById(ProblemId);
                 if(response.IsLocked && !_subscriptionHelper.isPremiumUser(User))
                 {
-                    return Forbid("Problem is locked. Please upgrade to a premium plan to access this problem.");
+                    return StatusCode(StatusCodes.Status403Forbidden, new
+                    {
+                        message = "Problem is locked. Please upgrade to a premium plan to access this problem."
+                    });
                 }
                 return Ok(response);
             }

@@ -6,7 +6,14 @@ export const problemApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getProblems: builder.mutation<
             {
-                items: { problemId: number; problemName: string; url: string; tags: string[]; userStatus: string }[];
+                items: {
+                    problemId: number;
+                    problemName: string;
+                    url: string;
+                    tags: string[];
+                    userStatus: string;
+                    isLocked: boolean; 
+                }[];
                 totalCount: number;
                 pageNumber: number;
                 pageSize: number;
@@ -28,6 +35,7 @@ export const problemApi = baseApi.injectEndpoints({
                 problemDetail: string;
                 difficultyLevel: string;
                 constraints: string;
+                isLocked: boolean;
                 tags: { value: string; topicId: number }[];
                 testCases: {
                     testCaseId: number;

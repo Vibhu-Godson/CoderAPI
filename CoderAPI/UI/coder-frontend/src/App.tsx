@@ -1,4 +1,6 @@
 import React from 'react';
+import PlansPage from './Plan/pages/PlansPage';
+import HomePage from './Home/pages/HomePage';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './auth/LoginPage';
 import RegisterPage from './auth/RegisterPage';
@@ -11,11 +13,12 @@ export default function App() {
         <>
             <Navbar isAuthenticated={true} setIsAuthenticated={() => { }} />
             <Routes>
-                <Route path="/" element={<Navigate to="/login" />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/problems" element={<ProblemsPage />} />
                 <Route path="/problems/:id" element={<ProblemDetailPage />} />
+                <Route path="/plans" element={<PlansPage />} />
             </Routes>
         </>
     );

@@ -9,6 +9,11 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import { BrowserRouter } from 'react-router-dom';
 
+window.addEventListener("error", (e) => {
+    if (e.message.includes("ResizeObserver loop")) {
+        e.stopImmediatePropagation();
+    }
+});
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );

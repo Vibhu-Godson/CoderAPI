@@ -23,5 +23,16 @@ export const API_URLS = {
     },
     hub: {
         submission: `${BASE_URL}/hubs/codeExecution`
+    },
+    plans: {
+        list: `${BASE_URL}/api/Plan`,
+        subscribe: `${BASE_URL}/api/Plan/subscribe`,
+    },
+    home: {
+        dashboard: "/home/dashboard",
+    },
+    payment: {
+        createPayment: (planId: number) => `${BASE_URL}/api/Payment/create-order?PlanId=${ planId }`,
+        verifyPayment: `${BASE_URL}/api/Payment/verify-payment`
     }
 };

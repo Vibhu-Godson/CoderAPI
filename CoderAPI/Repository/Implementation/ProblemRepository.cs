@@ -125,6 +125,8 @@ namespace CoderAPI.Repository.Implementation
                                         ProblemId = p.ProblemId,
                                         ProblemName = p.ProblemName,
                                         URL = "",
+                                        DifficultyLevel = p.DifficultyLevel,
+                                        IsLocked = p.IsLocked ?? false,
                                         Tags = _context.ProblemTags
                                             .Where(pt => pt.ProblemId == p.ProblemId)
                                             .Select(pt => pt.Tag.TagName)

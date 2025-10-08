@@ -24,8 +24,8 @@ export default function LoginPage() {
                 setToastMessage(`Welcome ${result.userName}!`);
                 setTimeout(() => {
                     setToastMessage(null);
-                    navigate('/problems');
-                }, 2000); // auto-close after 2s then navigate
+                    navigate('/home');
+                }, 200); // auto-close after 2s then navigate
             } else {
                 // ❌ Incorrect username/password
                 setToastType('error');

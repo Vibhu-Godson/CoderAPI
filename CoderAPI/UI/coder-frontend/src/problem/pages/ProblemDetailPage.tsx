@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import Split from "react-split";
+import { jwtDecode } from "jwt-decode";
+
 import {
     useGetProblemByIdQuery,
     useNewSessionMutation,
@@ -14,6 +15,24 @@ import AIChatPanel from "../components/AIChatPanel";
 import { signalRService } from "../../Service/signalRService";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+interface DecodedToken {
+    subscription?: string;
+    subscriptionExpiry?: string;
+    exp?: number;
+    [key: string]: any;
+}
+const token = localStorage.getItem("authToken");
+let isPremiumUser = false;
+
+if (token) {
+    const decoded: DecodedToken = jwtDecode(token);
+    const sub = decoded.subscription;
+    const expDate = new Date(decoded.subscriptionExpiry || "");
+
+    if (sub === "Premium" && expDate > new Date()) {
+        isPremiumUser = true;
+    }
+}
 // --- DEBOUNCE UTILITY FUNCTION (Retained for Split) ---
 const debounce = (func: Function, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -78,7 +97,7 @@ export default function ProblemDetailPage() {
     }, [isError, error]);
     // create session and add initial AI message once after problem is successfully loaded
     useEffect(() => {
-        if (isSuccess && problem?.problemId && !sessionId && !problem.isLocked) {
+        if (isSuccess && problem?.problemId && !sessionId && (!problem.isLocked || problem.isLocked && isPremiumUser)) {
             (async () => {
                 try {
                     const res = await startSession(problem.problemId).unwrap();
@@ -258,21 +277,12 @@ export default function ProblemDetailPage() {
 
     return (
         <div className="container-fluid mt-3">
-            <Split
-                className="d-flex border rounded shadow-sm"
-                sizes={[30, 40, 30]}
-                minSize={200}
-                expandToMin={false}
-                gutterSize={6}
-                gutterAlign="center"
-                style={{ height: "85vh" }}
-                onDrag={debouncedOnDrag}
-            >
+            <div className="grid grid-cols-[30%_40%_30%] h-[85vh] border rounded shadow-sm">
                 <div className="p-3 bg-light overflow-auto">
                     <ProblemDescription problem={problem} />
                 </div>
 
-                <div className="d-flex flex-column">
+                <div className="flex flex-col">
                     <CodeEditorPanel
                         code={code}
                         setCode={setCode}
@@ -288,7 +298,7 @@ export default function ProblemDetailPage() {
                     />
                 </div>
 
-                <div className="d-flex flex-column p-3 bg-light">
+                <div className="flex flex-col p-3 bg-light">
                     <AIChatPanel
                         chat={chat}
                         userInput={userInput}
@@ -296,7 +306,7 @@ export default function ProblemDetailPage() {
                         onSend={handleSend}
                     />
                 </div>
-            </Split>
+            </div>
         </div>
     );
 }

@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import LoadingSpinner from "../../problem/components/LoadingSpinner";
 import { jwtDecode } from "jwt-decode";
 import { useGetProblemsMutation } from "../problemApi";
 
@@ -57,7 +58,7 @@ export default function ProblemsPage() {
             </div>
 
             {/* Table */}
-            {isLoading && <div className="text-center my-4">Loading problems...</div>}
+            {isLoading && <div className="text-center my-4"><LoadingSpinner/></div>}
 
             {data && (
                 <div className="overflow-x-auto">

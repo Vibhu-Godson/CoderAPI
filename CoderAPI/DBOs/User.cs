@@ -62,14 +62,8 @@ public partial class User
     public string UserName { get; set; } = null!;
 
     [InverseProperty("User")]
-    public virtual ICollection<UserNote> UserNotes { get; set; } = new List<UserNote>();
-
-    [InverseProperty("User")]
     public virtual ICollection<UserProblemSession> UserProblemSessions { get; set; } = new List<UserProblemSession>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserSolution> UserSolutions { get; set; } = new List<UserSolution>();
-
-    [InverseProperty("User")]
-    public virtual ICollection<UserSubTopic> UserSubTopics { get; set; } = new List<UserSubTopic>();
 }

@@ -6,20 +6,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoderAPI.DBOs;
 
-public partial class UserCourse
+[Table("Bundle")]
+public partial class Bundle
 {
     [Key]
-    public long UserCourseId { get; set; }
+    public long BundleId { get; set; }
 
-    public long UserId { get; set; }
+    [StringLength(255)]
+    public string Title { get; set; } = null!;
 
-    public long CourseId { get; set; }
+    public string? Description { get; set; }
 
-    [Column(TypeName = "datetime")]
-    public DateTime? PurchaseDate { get; set; }
-
-    [StringLength(50)]
-    public string? ProgressStatus { get; set; }
+    [Column(TypeName = "decimal(10, 2)")]
+    public decimal? Price { get; set; }
 
     public bool? IsActive { get; set; }
 
@@ -35,7 +34,9 @@ public partial class UserCourse
     [StringLength(100)]
     public string? UpdatedBy { get; set; }
 
-    [ForeignKey("CourseId")]
-    [InverseProperty("UserCourses")]
-    public virtual Course Course { get; set; } = null!;
+    [StringLength(500)]
+    public string? ImageUrl { get; set; }
+
+    [InverseProperty("Bundle")]
+    public virtual ICollection<CourseBundle> CourseBundles { get; set; } = new List<CourseBundle>();
 }

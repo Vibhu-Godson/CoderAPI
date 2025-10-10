@@ -6,36 +6,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoderAPI.DBOs;
 
-public partial class UserCourse
+[Table("CourseCategory")]
+public partial class CourseCategory
 {
     [Key]
-    public long UserCourseId { get; set; }
-
-    public long UserId { get; set; }
+    public int CourseCategoryId { get; set; }
 
     public long CourseId { get; set; }
 
-    [Column(TypeName = "datetime")]
-    public DateTime? PurchaseDate { get; set; }
-
-    [StringLength(50)]
-    public string? ProgressStatus { get; set; }
+    public int CategoryId { get; set; }
 
     public bool? IsActive { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? CreatedOn { get; set; }
 
-    [StringLength(100)]
+    [StringLength(50)]
     public string? CreatedBy { get; set; }
 
-    [Column(TypeName = "datetime")]
-    public DateTime? UpdatedOn { get; set; }
-
-    [StringLength(100)]
-    public string? UpdatedBy { get; set; }
+    [ForeignKey("CategoryId")]
+    [InverseProperty("CourseCategories")]
+    public virtual Category Category { get; set; } = null!;
 
     [ForeignKey("CourseId")]
-    [InverseProperty("UserCourses")]
+    [InverseProperty("CourseCategories")]
     public virtual Course Course { get; set; } = null!;
 }

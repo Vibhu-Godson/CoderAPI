@@ -15,13 +15,19 @@ public partial class CodeDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Bundle> Bundles { get; set; }
+
+    public virtual DbSet<Category> Categories { get; set; }
+
     public virtual DbSet<Course> Courses { get; set; }
+
+    public virtual DbSet<CourseBundle> CourseBundles { get; set; }
+
+    public virtual DbSet<CourseCategory> CourseCategories { get; set; }
 
     public virtual DbSet<CourseTopic> CourseTopics { get; set; }
 
     public virtual DbSet<Feature> Features { get; set; }
-
-    public virtual DbSet<LearningStage> LearningStages { get; set; }
 
     public virtual DbSet<PlanFeature> PlanFeatures { get; set; }
 
@@ -33,19 +39,17 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<QuizQuestion> QuizQuestions { get; set; }
 
-    public virtual DbSet<SubTopic> SubTopics { get; set; }
-
     public virtual DbSet<Tag> Tags { get; set; }
 
     public virtual DbSet<TestCase> TestCases { get; set; }
 
     public virtual DbSet<Topic> Topics { get; set; }
 
+    public virtual DbSet<TopicAsset> TopicAssets { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserCourse> UserCourses { get; set; }
-
-    public virtual DbSet<UserNote> UserNotes { get; set; }
 
     public virtual DbSet<UserPlan> UserPlans { get; set; }
 
@@ -55,22 +59,63 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserSolution> UserSolutions { get; set; }
 
-    public virtual DbSet<UserSubTopic> UserSubTopics { get; set; }
-
     public virtual DbSet<UserTestCaseResult> UserTestCaseResults { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;Command Timeout=180;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Bundle>(entity =>
+        {
+            entity.HasKey(e => e.BundleId).HasName("PK__Bundle__4200345126A5CFA5");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A0BE105BF17");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
         modelBuilder.Entity<Course>(entity =>
         {
             entity.HasKey(e => e.CourseId).HasName("PK__Course__C92D71A77439DCC8");
 
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<CourseBundle>(entity =>
+        {
+            entity.HasKey(e => e.CourseBundleId).HasName("PK__CourseBu__D0C7D2C928D5CBEB");
+
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Bundle).WithMany(p => p.CourseBundles).HasConstraintName("FK__CourseBun__Bundl__3864608B");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.CourseBundles).HasConstraintName("FK__CourseBun__Cours__395884C4");
+        });
+
+        modelBuilder.Entity<CourseCategory>(entity =>
+        {
+            entity.HasKey(e => e.CourseCategoryId).HasName("PK__CourseCa__4D67EBB6CAB09762");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.CourseCategories)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CourseCat__Categ__489AC854");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.CourseCategories)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CourseCat__Cours__47A6A41B");
         });
 
         modelBuilder.Entity<CourseTopic>(entity =>
@@ -94,13 +139,6 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.FeatureId).HasName("PK__Feature__82230BC9342B82C9");
 
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-        });
-
-        modelBuilder.Entity<LearningStage>(entity =>
-        {
-            entity.HasKey(e => e.LearningStageId).HasName("PK__Learning__49320B573F39258D");
-
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
@@ -153,20 +191,7 @@ public partial class CodeDbContext : DbContext
         {
             entity.HasKey(e => e.QuestionId).HasName("PK__QuizQues__0DC06FAC98D01536");
 
-            entity.HasOne(d => d.SubTopic).WithMany(p => p.QuizQuestions)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__QuizQuest__SubTo__0B91BA14");
-        });
-
-        modelBuilder.Entity<SubTopic>(entity =>
-        {
-            entity.HasKey(e => e.SubTopicId).HasName("PK__SubTopic__3EFE32D0DC4BDC3C");
-
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-
-            entity.HasOne(d => d.Topic).WithMany(p => p.SubTopics)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__SubTopic__TopicI__31EC6D26");
+            entity.HasOne(d => d.Asset).WithMany(p => p.QuizQuestions).HasConstraintName("FK__QuizQuest__Asset__3587F3E0");
         });
 
         modelBuilder.Entity<Tag>(entity =>
@@ -192,8 +217,16 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.TopicId).HasName("PK__Topic__022E0F5D49BEDAEA");
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
 
-            entity.HasOne(d => d.LearningStage).WithMany(p => p.Topics).HasConstraintName("FK__Topic__LearningS__2E1BDC42");
+        modelBuilder.Entity<TopicAsset>(entity =>
+        {
+            entity.HasKey(e => e.TopicAssetId).HasName("PK__TopicAss__E61104BEAE1F00E3");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Topic).WithMany(p => p.TopicAssets).HasConstraintName("FK__TopicAsse__Topic__31B762FC");
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -215,22 +248,6 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Course).WithMany(p => p.UserCourses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserCourses_Course");
-        });
-
-        modelBuilder.Entity<UserNote>(entity =>
-        {
-            entity.HasKey(e => e.UserNoteId).HasName("PK__UserNote__6E0C06ACD7D98527");
-
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.IsPopup).HasDefaultValue(false);
-
-            entity.HasOne(d => d.SubTopic).WithMany(p => p.UserNotes)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserNotes__SubTo__3B75D760");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserNotes)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserNotes__UserI__3A81B327");
         });
 
         modelBuilder.Entity<UserPlan>(entity =>
@@ -291,23 +308,6 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.UserProblemSession).WithMany(p => p.UserSolutions)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserSolut__UserP__5812160E");
-        });
-
-        modelBuilder.Entity<UserSubTopic>(entity =>
-        {
-            entity.HasKey(e => e.UserSubTopicId).HasName("PK__UserSubT__1B8876289ABB20BE");
-
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-
-            entity.HasOne(d => d.SubTopic).WithMany(p => p.UserSubTopics)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserSubTo__SubTo__36B12243");
-
-            entity.HasOne(d => d.UserCourse).WithMany(p => p.UserSubTopics).HasConstraintName("FK__UserSubTo__UserC__08B54D69");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserSubTopics)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserSubTo__UserI__35BCFE0A");
         });
 
         modelBuilder.Entity<UserTestCaseResult>(entity =>

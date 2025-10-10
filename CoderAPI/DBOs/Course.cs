@@ -39,6 +39,15 @@ public partial class Course
     [StringLength(100)]
     public string? UpdatedBy { get; set; }
 
+    [StringLength(500)]
+    public string? ImageUrl { get; set; }
+
+    [InverseProperty("Course")]
+    public virtual ICollection<CourseBundle> CourseBundles { get; set; } = new List<CourseBundle>();
+
+    [InverseProperty("Course")]
+    public virtual ICollection<CourseCategory> CourseCategories { get; set; } = new List<CourseCategory>();
+
     [InverseProperty("Course")]
     public virtual ICollection<CourseTopic> CourseTopics { get; set; } = new List<CourseTopic>();
 

@@ -43,6 +43,12 @@ public partial class Problem
 
     public long? MemoryLimit { get; set; }
 
+    [StringLength(1000)]
+    public string? AdditionalDetails { get; set; }
+
+    [StringLength(500)]
+    public string? AnalyticDetails { get; set; }
+
     [InverseProperty("Problem")]
     public virtual ICollection<ProblemTag> ProblemTags { get; set; } = new List<ProblemTag>();
 

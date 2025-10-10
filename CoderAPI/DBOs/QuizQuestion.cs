@@ -12,8 +12,6 @@ public partial class QuizQuestion
     [Key]
     public long QuestionId { get; set; }
 
-    public long SubTopicId { get; set; }
-
     public string? QuestionText { get; set; }
 
     [StringLength(50)]
@@ -23,7 +21,9 @@ public partial class QuizQuestion
 
     public string? CorrectAnswer { get; set; }
 
-    [ForeignKey("SubTopicId")]
+    public long? AssetId { get; set; }
+
+    [ForeignKey("AssetId")]
     [InverseProperty("QuizQuestions")]
-    public virtual SubTopic SubTopic { get; set; } = null!;
+    public virtual TopicAsset? Asset { get; set; }
 }

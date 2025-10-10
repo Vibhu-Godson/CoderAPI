@@ -29,8 +29,10 @@
     <Folder Include="MicroService\SignalR\" />
     <Folder Include="UI\coder-frontend\src\auth\" />
     <Folder Include="UI\coder-frontend\src\common\" />
-    <Folder Include="UI\coder-frontend\src\Courses\" />
     <Folder Include="UI\coder-frontend\src\community\" />
+    <Folder Include="UI\coder-frontend\src\Courses\components\" />
+    <Folder Include="UI\coder-frontend\src\Courses\pages\" />
+    <Folder Include="UI\coder-frontend\src\Courses\types\" />
     <Folder Include="UI\coder-frontend\src\Home\components\" />
     <Folder Include="UI\coder-frontend\src\Home\pages\" />
     <Folder Include="UI\coder-frontend\src\Plan\components\" />

@@ -34,5 +34,14 @@ export const API_URLS = {
     payment: {
         createPayment: (planId: number) => `${BASE_URL}/api/Payment/create-order?PlanId=${ planId }`,
         verifyPayment: `${BASE_URL}/api/Payment/verify-payment`
+    },
+    course: {
+        getPopularCourses: '/api/Course/Popular',
+        getPopularBundles: '/api/Course/PopularBundles',
+        getCategories: '/api/Course/Categories',
+        getCoursesByCategory: (id: number) => `/api/Course/categories/${id}/courses`,
+        getCourseById: (id: number) => `/api/Course/${id}`,
+        getBundleById: (id: number) => `/api/Course/Bundles/${id}`,
+        searchCourses: '/api/Course/Search',
     }
 };

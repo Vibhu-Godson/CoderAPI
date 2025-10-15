@@ -49,6 +49,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserBoard> UserBoards { get; set; }
+
     public virtual DbSet<UserCourse> UserCourses { get; set; }
 
     public virtual DbSet<UserPlan> UserPlans { get; set; }
@@ -67,7 +69,7 @@ public partial class CodeDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;Command Timeout=180;");
+        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -238,6 +240,15 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C4B32AD15");
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<UserBoard>(entity =>
+        {
+            entity.HasKey(e => e.UserBoardId).HasName("PK__UserBoar__EFC72B5768872A89");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedOn).HasDefaultValueSql("(getdate())");
         });
 
         modelBuilder.Entity<UserCourse>(entity =>

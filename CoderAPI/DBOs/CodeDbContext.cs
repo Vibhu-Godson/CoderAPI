@@ -61,6 +61,10 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserTestCaseResult> UserTestCaseResults { get; set; }
 
+    public virtual DbSet<UserTopic> UserTopics { get; set; }
+
+    public virtual DbSet<UserTopicAsset> UserTopicAssets { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;Command Timeout=180;");
@@ -323,6 +327,43 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.UserSolution).WithMany(p => p.UserTestCaseResults)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserTestC__UserS__5FB337D6");
+        });
+
+        modelBuilder.Entity<UserTopic>(entity =>
+        {
+            entity.HasKey(e => e.UserTopicId).HasName("PK__UserTopi__03A8C6901A1CAC15");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ProgressPercent).HasDefaultValue(0.00m);
+            entity.Property(e => e.Status).HasDefaultValue("NotStarted");
+
+            entity.HasOne(d => d.Topic).WithMany(p => p.UserTopics)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserTopic_Topic");
+
+            entity.HasOne(d => d.UserCourse).WithMany(p => p.UserTopics)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserTopic_UserCourse");
+        });
+
+        modelBuilder.Entity<UserTopicAsset>(entity =>
+        {
+            entity.HasKey(e => e.UserTopicAssetId).HasName("PK__UserTopi__B69B747665D4CC08");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ProgressPercent).HasDefaultValue(0.00m);
+            entity.Property(e => e.Status).HasDefaultValue("NotStarted");
+            entity.Property(e => e.WatchedDurationInMinutes).HasDefaultValue(0);
+
+            entity.HasOne(d => d.TopicAsset).WithMany(p => p.UserTopicAssets)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserTopicAsset_TopicAsset");
+
+            entity.HasOne(d => d.UserTopic).WithMany(p => p.UserTopicAssets)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserTopicAsset_UserTopic");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -26,16 +26,26 @@ public partial class UserCourse
     [Column(TypeName = "datetime")]
     public DateTime? CreatedOn { get; set; }
 
-    [StringLength(100)]
-    public string? CreatedBy { get; set; }
+    public long? CreatedBy { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? UpdatedOn { get; set; }
 
+    public long? UpdatedBy { get; set; }
+
+    [StringLength(500)]
+    public string? RazorpayOrderId { get; set; }
+
     [StringLength(100)]
-    public string? UpdatedBy { get; set; }
+    public string? RazorpayPaymentId { get; set; }
+
+    [StringLength(50)]
+    public string? PaymentStatus { get; set; }
 
     [ForeignKey("CourseId")]
     [InverseProperty("UserCourses")]
     public virtual Course Course { get; set; } = null!;
+
+    [InverseProperty("UserCourse")]
+    public virtual ICollection<UserTopic> UserTopics { get; set; } = new List<UserTopic>();
 }

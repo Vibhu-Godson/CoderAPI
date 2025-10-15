@@ -36,4 +36,7 @@ public partial class Topic
 
     [InverseProperty("Topic")]
     public virtual ICollection<TopicAsset> TopicAssets { get; set; } = new List<TopicAsset>();
+
+    [InverseProperty("Topic")]
+    public virtual ICollection<UserTopic> UserTopics { get; set; } = new List<UserTopic>();
 }

@@ -5,8 +5,12 @@ namespace CoderAPI.Service.Interface
 {
     public interface IPaymentService
     {
-        Task<CreateOrderResponse> CreateOrder(long PlanId, long userId);
-        Task<StatusResponse> VerifyPayment(VerifyPaymentRequest request, long userId);
+        Task<CreateOrderResponse> CreatePlanOrder(long PlanId, long userId);
+        Task<StatusResponse> VerifyPlanPayment(VerifyPaymentRequest request, long userId);
+        Task<CreateOrderResponse> CreateCourseOrder(long CourseId, long userId);
+        Task<StatusResponse> VerifyCoursePayment(VerifyPaymentRequest request, long userId);
+        Task<CreateOrderResponse> CreateBundleOrder(long BundleId, long userId);
+        Task<StatusResponse> VerifyBundlePayment(VerifyPaymentRequest request, long userId);
 
     }
 }

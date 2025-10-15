@@ -7,4 +7,11 @@
         Failed,
         Hold
     }
+    public enum CourseStatus
+    {
+        NotStarted,
+        Purchased,
+        OnGoing,
+        Completed
+    }
 }

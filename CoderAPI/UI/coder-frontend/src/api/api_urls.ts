@@ -32,8 +32,12 @@ export const API_URLS = {
         dashboard: "/home/dashboard",
     },
     payment: {
-        createPayment: (planId: number) => `${BASE_URL}/api/Payment/create-order?PlanId=${ planId }`,
-        verifyPayment: `${BASE_URL}/api/Payment/verify-payment`
+        createPayment: (planId: number) => `${BASE_URL}/api/Payment/Plan/create-order?PlanId=${ planId }`,
+        verifyPayment: `${BASE_URL}/api/Payment/Plan/verify-payment`,
+        createCoursePayment: (courseId: number) => `${BASE_URL}/api/Payment/Course/create-order?CourseId=${courseId}`,
+        verifyCoursePayment: `${BASE_URL}/api/Payment/Course/verify-payment`,
+        createBundlePayment: (bundleId: number) => `${BASE_URL}/api/Payment/Bundle/create-order?BundleId=${bundleId}`,
+        verifyBundlePayment: `${BASE_URL}/api/Payment/Bundle/verify-payment`,
     },
     course: {
         getPopularCourses: '/api/Course/Popular',
@@ -43,5 +47,13 @@ export const API_URLS = {
         getCourseById: (id: number) => `/api/Course/${id}`,
         getBundleById: (id: number) => `/api/Course/Bundles/${id}`,
         searchCourses: '/api/Course/Search',
+    },
+    userCourse: {
+        getMyCourses: '/api/UserCourse/All',
+        getDetail: (userCourseId: number) => `/api/UserCourse/detail?UserCourseId=${userCourseId}`,
+        getTopic: '/api/UserCourse/Topic', 
+        updateTopicStatus: '/api/UserCourse/UpdateTopicStatus', 
+        updateTopicAssetStatus: '/api/UserCourse/UpdateTopicAssetStatus', 
+
     }
 };

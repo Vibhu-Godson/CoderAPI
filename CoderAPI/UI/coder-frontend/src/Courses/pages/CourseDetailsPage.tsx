@@ -1,7 +1,8 @@
 ﻿import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useGetCourseByIdQuery } from '../courseApi';
+import { useGetCourseByIdQuery, useCreateCourseOrderMutation, useVerifyCoursePaymentMutation } from '../courseApi';
 import LoadingSpinner from '../../problem/components/LoadingSpinner';
+import { handleRazorpayCoursePayment } from '../../Utils/razorpayHandler';
 
 
 export const CourseDetailsPage: React.FC = () => {
@@ -9,10 +10,11 @@ export const CourseDetailsPage: React.FC = () => {
     const courseId = Number(id);
     const { data, isLoading } = useGetCourseByIdQuery(courseId, { skip: !courseId });
 
+    const [createCourseOrder] = useCreateCourseOrderMutation();
+    const [verifyCoursePayment] = useVerifyCoursePaymentMutation();
 
     if (isLoading) return <div className="p-6"><LoadingSpinner /></div>;
     if (!data) return <div className="p-6">Course not found</div>;
-
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -28,7 +30,14 @@ export const CourseDetailsPage: React.FC = () => {
                         <div className="text-sm text-gray-500">Guaranteed outcome after completing course</div>
                     </div>
                     <div>
-                        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow">Buy Now</button>
+                        <button
+                            onClick={() =>
+                                handleRazorpayCoursePayment(courseId, createCourseOrder, verifyCoursePayment)
+                            }
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700"
+                        >
+                            Buy Now
+                        </button>
                     </div>
                 </div>
             </div>

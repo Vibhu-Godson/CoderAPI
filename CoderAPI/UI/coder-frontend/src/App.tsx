@@ -10,6 +10,7 @@ import { CoursesPage } from './Courses/pages/CoursesPage';
 import { CourseDetailsPage } from './Courses/pages/CourseDetailsPage';
 import { BundleDetailsPage } from './Courses/pages/BundleDetailsPage';
 import { CategoryCoursesPage } from './Courses/pages/CategoryCoursesPage';
+import { MyCoursePage } from './Courses/pages/MyCoursePage';
 import Navbar from './common/Navbar';
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
                 <Route path="/course/:id" element={<CourseDetailsPage />} />
                 <Route path="/bundle/:id" element={<BundleDetailsPage />} />
                 <Route path="/category/:id" element={<CategoryCoursesPage />} />
+                <Route path="/myCourses/:userCourseId" element={<MyCoursePage />} />
             </Routes>
         </>
     );

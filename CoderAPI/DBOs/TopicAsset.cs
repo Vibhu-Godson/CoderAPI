@@ -48,4 +48,7 @@ public partial class TopicAsset
     [ForeignKey("TopicId")]
     [InverseProperty("TopicAssets")]
     public virtual Topic? Topic { get; set; }
+
+    [InverseProperty("TopicAsset")]
+    public virtual ICollection<UserTopicAsset> UserTopicAssets { get; set; } = new List<UserTopicAsset>();
 }

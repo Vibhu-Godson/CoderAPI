@@ -35,6 +35,7 @@
     <Folder Include="UI\coder-frontend\src\Courses\types\" />
     <Folder Include="UI\coder-frontend\src\Home\components\" />
     <Folder Include="UI\coder-frontend\src\Home\pages\" />
+    <Folder Include="UI\coder-frontend\src\Utils\" />
     <Folder Include="UI\coder-frontend\src\Plan\components\" />
     <Folder Include="UI\coder-frontend\src\Plan\pages\" />
     <Folder Include="UI\coder-frontend\src\Service\" />

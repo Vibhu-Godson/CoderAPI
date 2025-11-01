@@ -36,18 +36,18 @@ public partial class Problem
 
     public bool? IsLocked { get; set; }
 
-    [StringLength(500)]
     public string? Hints { get; set; }
 
     public long? TimeLimit { get; set; }
 
     public long? MemoryLimit { get; set; }
 
-    [StringLength(1000)]
     public string? AdditionalDetails { get; set; }
 
-    [StringLength(500)]
     public string? AnalyticDetails { get; set; }
+
+    [InverseProperty("Problem")]
+    public virtual ICollection<ProblemDetail> ProblemDetails { get; set; } = new List<ProblemDetail>();
 
     [InverseProperty("Problem")]
     public virtual ICollection<ProblemTag> ProblemTags { get; set; } = new List<ProblemTag>();

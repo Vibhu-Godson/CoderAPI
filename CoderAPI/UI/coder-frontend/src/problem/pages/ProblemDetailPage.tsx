@@ -12,40 +12,24 @@ import ProblemDescription from "../components/ProblemDescription";
 import CodeEditorPanel from "../components/CodeEditorPanel";
 import AIChatPanel from "../components/AIChatPanel";
 import { signalRService } from "../../Service/signalRService";
-import LoadingSpinner from "../components/LoadingSpinner";
-import MySolutions from "../components/MySolutions";
-import MySessions from "../components/MySessions";
-
 import { Tldraw, createTLStore, defaultShapeUtils, TLStore } from "@tldraw/tldraw";
 import "@tldraw/tldraw/tldraw.css";
 
-// ---------------- TOKEN & ACCESS CONTROL -----------------
-interface DecodedToken {
+type DecodedToken = {
     subscription?: string;
     subscriptionExpiry?: string;
     exp?: number;
     [key: string]: any;
-}
+};
+
 const token = localStorage.getItem("authToken");
 let isPremiumUser = false;
-
 if (token) {
     const decoded: DecodedToken = jwtDecode(token);
     const sub = decoded.subscription;
     const expDate = new Date(decoded.subscriptionExpiry || "");
-    if (sub === "Premium" && expDate > new Date()) {
-        isPremiumUser = true;
-    }
+    if (sub === "Premium" && expDate > new Date()) isPremiumUser = true;
 }
-// ----------------------------------------------------------
-
-const debounce = (func: Function, delay: number) => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    return (...args: any[]) => {
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func(...args), delay);
-    };
-};
 
 const AI_START_MESSAGES = [
     "What is your initial approach to solve this problem?",
@@ -58,70 +42,59 @@ export default function ProblemDetailPage() {
     const { id } = useParams<{ id: string }>();
     const problemId = Number(id);
 
-    const {
-        data: problem,
-        error,
-        isError,
-        isLoading,
-        isSuccess,
-    } = useGetProblemByIdQuery(problemId);
-
-    const [isLocked, setIsLocked] = useState(false);
+    const { data: problem, error, isError, isLoading, isSuccess } = useGetProblemByIdQuery(problemId);
     const [startSession] = useNewSessionMutation();
     const [completeSession] = useCompleteSessionMutation();
     const [sendPrompt] = useSendPromptMutation();
     const [runOrSubmit] = useRunOrSubmitSolutionMutation();
-    const [lastSubmittedSolutionId, setLastSubmittedSolutionId] = useState<number | null>(null);
-    const [sessionId, setSessionId] = useState<number | null>(null);
 
-    const [chat, setChat] = useState<{ from: "ai" | "user"; text: string }[]>([]);
+    const [sessionId, setSessionId] = useState<number | null>(null);
+    const [chat, setChat] = useState<{ from: "ai" | "user"; text: string; meta?: string[] }[]>([]);
     const [userInput, setUserInput] = useState("");
     const [code, setCode] = useState("// Your solution here");
     const [editorLocked, setEditorLocked] = useState(true);
-    const [language, setLanguage] = useState("C");
+    const [language, setLanguage] = useState("c");
     const [signalRConnected, setSignalRConnected] = useState(false);
+
     const [activeLeftTab, setActiveLeftTab] = useState<"description" | "solutions" | "sessions">("description");
     const [activeMiddleTab, setActiveMiddleTab] = useState<"code" | "board">("code");
 
+    const [includeCode, setIncludeCode] = useState(true);
+    const [includeBoard, setIncludeBoard] = useState(false);
+    const [isLocked, setIsLocked] = useState(false);
+    const [lastSubmittedSolutionId, setLastSubmittedSolutionId] = useState<number | null>(null);
+
     const [store] = useState<TLStore>(() => createTLStore({ shapeUtils: defaultShapeUtils }));
+    const tlEditorRef = useRef<any>(null);
+    const liveBoardStoreRef = useRef<any>(null);
 
-    const debouncedOnDrag = useRef(debounce(() => { }, 50)).current;
-
-    // ---- Handle problem lock ----
+    // === Lock handling ===
     useEffect(() => {
-        if (isError && "status" in error && error.status === 403) {
-            const errMsg = (error as any)?.data?.message || "Problem is locked.";
-            console.warn("Locked Problem:", errMsg);
+        if (isError && "status" in (error as any) && (error as any).status === 403) {
             setIsLocked(true);
         }
     }, [isError, error]);
 
-    // ---- Create session after loading problem ----
+    // === Start a session when problem loads ===
     useEffect(() => {
-        if (isSuccess && problem?.problemId && !sessionId && (!problem.isLocked || (problem.isLocked && isPremiumUser))) {
-            (async () => {
-                try {
-                    const res = await startSession(problem.problemId).unwrap();
-                    if (res.status) {
-                        setSessionId(res.userProblemSessionId);
-                        console.log("Session started:", res.userProblemSessionId);
-
-                        const randomMessage = AI_START_MESSAGES[Math.floor(Math.random() * AI_START_MESSAGES.length)];
-                        setChat([{ from: "ai", text: randomMessage }]);
-
-                        await signalRService.connect();
-                        setSignalRConnected(signalRService.isConnected());
-                        await signalRService.joinSolutionGroup(res.userProblemSessionId);
-                        console.info("Joined session group", res.userProblemSessionId);
-                    } else {
-                        console.warn("Failed to create session:", res.message);
-                    }
-                } catch (err) {
-                    console.error("Error creating session:", err);
+        if (!isSuccess || !problem?.problemId || sessionId) return;
+        if (problem.isLocked && !isPremiumUser) return;
+        (async () => {
+            try {
+                const res = await startSession(problem.problemId).unwrap();
+                if (res.status) {
+                    setSessionId(res.userProblemSessionId);
+                    const randomMsg = AI_START_MESSAGES[Math.floor(Math.random() * AI_START_MESSAGES.length)];
+                    setChat([{ from: "ai", text: randomMsg }]);
+                    await signalRService.connect();
+                    setSignalRConnected(signalRService.isConnected());
+                    await signalRService.joinSolutionGroup(res.userProblemSessionId);
                 }
-            })();
-        }
-    }, [isSuccess, problem, startSession, sessionId]);
+            } catch (e) {
+                console.error("Error creating session:", e);
+            }
+        })();
+    }, [isSuccess, problem, sessionId, startSession]);
 
     useEffect(() => {
         return () => {
@@ -133,7 +106,7 @@ export default function ProblemDetailPage() {
         };
     }, []);
 
-    // ---- AI Request Explanation Event ----
+    // === AI request explanation listener ===
     useEffect(() => {
         const handler = (e: any) => {
             const { userSolutionId } = e.detail || {};
@@ -147,44 +120,65 @@ export default function ProblemDetailPage() {
             ]);
             if (userSolutionId) setLastSubmittedSolutionId(userSolutionId);
         };
-
         window.addEventListener("ai-request-explanation", handler);
         return () => window.removeEventListener("ai-request-explanation", handler);
     }, []);
 
-    // ---- Chat send ----
+    // === Send chat ===
     const handleSend = async () => {
         if (!sessionId || !userInput.trim()) return;
-        const userTextToSend = userInput;
-        setChat((c) => [...c, { from: "user", text: userTextToSend }]);
+
+        const meta: string[] = [];
+        const context: { code?: string; board?: string } = {};
+
+        if (includeCode) {
+            context.code = code;
+            meta.push("Code");
+        }
+
+        if (includeBoard) {
+            try {
+                const editor = tlEditorRef.current;
+                let boardJson: any = null;
+
+                if (editor?.store?.serialize) {
+                    boardJson = editor.store.serialize();
+                } else if (editor?.getSnapshot) {
+                    boardJson = editor.getSnapshot();
+                } else if (liveBoardStoreRef.current?.serialize) {
+                    boardJson = liveBoardStoreRef.current.serialize();
+                }
+
+                if (boardJson) {
+                    context.board = JSON.stringify(boardJson);
+                    meta.push("Whiteboard");
+                }
+            } catch (err) {
+                console.error("Error while serializing whiteboard:", err);
+            }
+        }
+
+        const msg = userInput;
+        setChat((c) => [...c, { from: "user", text: msg, meta }]);
         setUserInput("");
 
         try {
             const res = await sendPrompt({
                 problemId,
                 userProblemSessionId: sessionId,
-                userText: userTextToSend,
+                userText: msg,
                 userSolutionId: lastSubmittedSolutionId ?? undefined,
                 isAfterSubmit: !!lastSubmittedSolutionId,
             }).unwrap();
 
             setChat((c) => [...c, { from: "ai", text: res.message }]);
-
-            if (res.accuracy >= 0.5) setEditorLocked(false);
-            if (res.accuracy >= 0.82 && !!lastSubmittedSolutionId) {
-                try {
-                    await completeSession({ userSessionId: sessionId }).unwrap();
-                    alert("✅ Session marked as completed");
-                } catch (err) {
-                    console.error("❌ Failed to complete session", err);
-                }
-            }
         } catch (err) {
-            console.error("Error sending prompt:", err);
+            console.error("AI sendPrompt error:", err);
+            setChat((c) => [...c, { from: "ai", text: "I hit a hiccup processing that. Try again?" }]);
         }
     };
 
-    // ---- Run & Submit Wrappers ----
+    // === Run / Submit ===
     const wrappedRun = useCallback(async () => {
         if (!sessionId) return { ok: false, message: "No session" };
         try {
@@ -196,11 +190,9 @@ export default function ProblemDetailPage() {
                 language,
                 isSubmit: false,
             }).unwrap();
-
-            alert(res.message);
+            setChat((c) => [...c, { from: "ai", text: res.message }]);
             return { ok: res.status ?? true, message: res.message, userSolutionId: res.userSolutionId };
-        } catch (err) {
-            console.error("Error running code:", err);
+        } catch {
             return { ok: false, message: "Run failed" };
         }
     }, [sessionId, code, language, problemId, runOrSubmit]);
@@ -216,114 +208,184 @@ export default function ProblemDetailPage() {
                 language,
                 isSubmit: true,
             }).unwrap();
-
-            alert(res.message);
+            setChat((c) => [...c, { from: "ai", text: res.message }]);
             return { ok: res.status ?? true, message: res.message, userSolutionId: res.userSolutionId };
-        } catch (err) {
-            console.error("Error submitting code:", err);
+        } catch {
             return { ok: false, message: "Submit failed" };
         }
     }, [sessionId, code, language, problemId, runOrSubmit]);
 
-    // ---- UI RENDER ----
-    if (isLoading) return <LoadingSpinner />;
+    // === Debounced autosave placeholder ===
+    const debouncedSave = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const saveBoardIfNeeded = useCallback(() => {
+        if (!sessionId) return;
+        const snap = liveBoardStoreRef.current?.getSnapshot?.();
+        const content = snap ? JSON.stringify(snap) : "{}";
+        if (debouncedSave.current) clearTimeout(debouncedSave.current);
+        debouncedSave.current = setTimeout(() => {
+            console.log("🧭 Auto-saving board skipped (API removed)", { sessionId, problemId, length: content.length });
+        }, 700);
+    }, [problemId, sessionId]);
 
-    if (isLocked) {
+    useEffect(() => {
+        const unsub = store.listen(() => {
+            if (activeMiddleTab === "board") saveBoardIfNeeded();
+        }, { scope: "document" });
+        return () => { unsub(); };
+    }, [store, activeMiddleTab, saveBoardIfNeeded]);
+
+    // === Loading / Lock states ===
+    if (isLoading)
         return (
-            <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "80vh" }}>
-                <i className="bi bi-lock-fill display-1 text-secondary mb-3"></i>
-                <h3 className="text-muted">This problem is locked</h3>
-                <p className="text-center text-secondary" style={{ maxWidth: "500px" }}>
-                    This problem is available only to premium members.
-                </p>
-                <button className="btn btn-primary mt-3">Upgrade to Premium</button>
+            <div className="flex h-screen items-center justify-center text-zinc-500">
+                <div className="mr-3 h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent" />
+                Loading problem…
             </div>
         );
-    }
 
-    if (isError) return <div>Something went wrong while loading the problem.</div>;
+    if (isLocked)
+        return (
+            <div className="flex h-screen flex-col items-center justify-center gap-3">
+                <div className="text-5xl">🔒</div>
+                <h3 className="text-zinc-700 dark:text-zinc-200">This problem is locked</h3>
+                <p className="max-w-md text-center text-zinc-500 dark:text-zinc-400">
+                    This problem is available only to premium members.
+                </p>
+                <button className="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                    Upgrade to Premium
+                </button>
+            </div>
+        );
+
+    if (isError)
+        return (
+            <div className="flex h-screen items-center justify-center text-red-600">
+                Something went wrong while loading the problem.
+            </div>
+        );
 
     return (
-        <div className="container-fluid mt-3">
-            <div className="grid grid-cols-[30%_40%_30%] h-[85vh] border rounded shadow-sm">
+        <div className="fixed inset-0 flex flex-col bg-zinc-50 p-3 dark:bg-zinc-900">
+            <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-[28%_1fr_32%]">
                 {/* LEFT PANEL */}
-                <div className="p-3 bg-light overflow-auto">
-                    <div className="d-flex border-bottom mb-2">
-                        <button
-                            className={`btn flex-grow-1 ${activeLeftTab === "description" ? "btn-primary" : "btn-light"}`}
-                            onClick={() => setActiveLeftTab("description")}
-                        >
+                <div className="flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="mb-2 flex gap-2">
+                        <TabButton active={activeLeftTab === "description"} onClick={() => setActiveLeftTab("description")}>
                             Description
-                        </button>
-                        <button
-                            className={`btn flex-grow-1 ${activeLeftTab === "solutions" ? "btn-primary" : "btn-light"}`}
-                            onClick={() => setActiveLeftTab("solutions")}
-                        >
+                        </TabButton>
+                        <TabButton active={activeLeftTab === "solutions"} onClick={() => setActiveLeftTab("solutions")}>
                             My Solutions
-                        </button>
-                        <button
-                            className={`btn flex-grow-1 ${activeLeftTab === "sessions" ? "btn-primary" : "btn-light"}`}
-                            onClick={() => setActiveLeftTab("sessions")}
-                        >
+                        </TabButton>
+                        <TabButton active={activeLeftTab === "sessions"} onClick={() => setActiveLeftTab("sessions")}>
                             My Sessions
-                        </button>
+                        </TabButton>
                     </div>
-
-                    {activeLeftTab === "description" && <ProblemDescription problem={problem} />}
-                    {activeLeftTab === "solutions" && <MySolutions />}
-                    {activeLeftTab === "sessions" && <MySessions />}
+                    <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
+                        {activeLeftTab === "description" && <ProblemDescription problem={problem} />}
+                        {activeLeftTab === "solutions" && (
+                            <div className="text-sm text-zinc-500">/* hook up MySolutions here */</div>
+                        )}
+                        {activeLeftTab === "sessions" && (
+                            <div className="text-sm text-zinc-500">/* hook up MySessions here */</div>
+                        )}
+                    </div>
                 </div>
 
                 {/* MIDDLE PANEL */}
-                <div className="flex flex-col flex-grow-1 border-end">
-                    <div className="d-flex bg-light p-2">
-                        <button
-                            className={`btn me-2 ${activeMiddleTab === "code" ? "btn-primary" : "btn-outline-primary"}`}
-                            onClick={() => setActiveMiddleTab("code")}
-                        >
+                <div className="flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="flex items-center gap-2 border-b border-zinc-200 p-2 dark:border-zinc-800">
+                        <TabButton active={activeMiddleTab === "code"} onClick={() => setActiveMiddleTab("code")}>
                             Code Editor
-                        </button>
-                        <button
-                            className={`btn ${activeMiddleTab === "board" ? "btn-primary" : "btn-outline-primary"}`}
-                            onClick={() => setActiveMiddleTab("board")}
-                        >
+                        </TabButton>
+                        <TabButton active={activeMiddleTab === "board"} onClick={() => setActiveMiddleTab("board")}>
                             Whiteboard
-                        </button>
+                        </TabButton>
+
+                        <div className="ml-auto flex items-center gap-2 text-xs text-zinc-500">
+                            <span
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${signalRConnected
+                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                    : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                                    }`}
+                            >
+                                <span
+                                    className={`h-2 w-2 rounded-full ${signalRConnected ? "bg-emerald-500" : "bg-zinc-400"
+                                        }`}
+                                />
+                                Live
+                            </span>
+                        </div>
                     </div>
 
-                    {activeMiddleTab === "code" && (
-                        <CodeEditorPanel
-                            code={code}
-                            setCode={setCode}
-                            onRun={wrappedRun}
-                            onSubmit={wrappedSubmit}
-                            editorLocked={editorLocked}
-                            setEditorLocked={setEditorLocked}
-                            language={language}
-                            setLanguage={setLanguage}
-                            signalRConnected={signalRConnected}
-                            sessionId={sessionId}
-                            problemId={problemId}
-                        />
-                    )}
+                    <div className="min-h-0 flex-1 overflow-auto">
+                        {activeMiddleTab === "code" && (
+                            <CodeEditorPanel
+                                code={code}
+                                setCode={setCode}
+                                onRun={wrappedRun}
+                                onSubmit={wrappedSubmit}
+                                editorLocked={editorLocked}
+                                setEditorLocked={setEditorLocked}
+                                language={language}
+                                setLanguage={setLanguage}
+                                signalRConnected={signalRConnected}
+                                sessionId={sessionId}
+                                problemId={problemId}
+                            />
+                        )}
 
-                    {activeMiddleTab === "board" && (
-                        <div style={{ width: "100%", height: "100%" }}>
-                            <Tldraw store={store} />
-                        </div>
-                    )}
+                        {activeMiddleTab === "board" && (
+                            <div className="h-full w-full overflow-hidden">
+                                <Tldraw
+                                    store={store}
+                                    onMount={(editor) => {
+                                        tlEditorRef.current = editor;
+                                        liveBoardStoreRef.current = editor.store;
+                                        console.log("✅ Tldraw editor mounted");
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* RIGHT PANEL */}
-                <div className="flex flex-col p-3 bg-light">
+                {/* RIGHT PANEL (CHAT) */}
+                <div className="flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <AIChatPanel
                         chat={chat}
                         userInput={userInput}
                         setUserInput={setUserInput}
                         onSend={handleSend}
+                        includeCode={includeCode}
+                        setIncludeCode={setIncludeCode}
+                        includeBoard={includeBoard}
+                        setIncludeBoard={setIncludeBoard}
                     />
                 </div>
             </div>
         </div>
+    );
+}
+
+// ---- Small Reusable Tab Button ----
+function TabButton({
+    active,
+    onClick,
+    children,
+}: {
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            className={`rounded-md px-3 py-1.5 text-sm transition ${active
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                }`}
+        >
+            {children}
+        </button>
     );
 }

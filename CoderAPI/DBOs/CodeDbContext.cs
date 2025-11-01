@@ -35,6 +35,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<Problem> Problems { get; set; }
 
+    public virtual DbSet<ProblemDetail> ProblemDetails { get; set; }
+
     public virtual DbSet<ProblemTag> ProblemTags { get; set; }
 
     public virtual DbSet<QuizQuestion> QuizQuestions { get; set; }
@@ -67,10 +69,7 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserTopicAsset> UserTopicAssets { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=PUIN-LT289\\SQLEXPRESS;Database=Coder;Trusted_Connection=True;TrustServerCertificate=True;");
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Bundle>(entity =>
@@ -178,6 +177,18 @@ public partial class CodeDbContext : DbContext
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsLocked).HasDefaultValue(false);
+        });
+
+        modelBuilder.Entity<ProblemDetail>(entity =>
+        {
+            entity.HasKey(e => e.ProblemDetailId).HasName("PK__ProblemD__E0C3A6F511742332");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Problem).WithMany(p => p.ProblemDetails)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProblemDe__Probl__6FB49575");
         });
 
         modelBuilder.Entity<ProblemTag>(entity =>

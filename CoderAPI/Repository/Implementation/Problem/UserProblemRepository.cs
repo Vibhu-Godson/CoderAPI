@@ -27,6 +27,7 @@ namespace CoderAPI.Repository.Implementation.Problem
                     .Select(uc => new { uc.ChatMessage, uc.AiReply })
                     .ToListAsync();
                 var response = new UserChatDto();
+                response.messages = new List<UserChatMessageDto>();
                 foreach(var ch in chatRows)
                 {
                     var userMessage = new UserChatMessageDto

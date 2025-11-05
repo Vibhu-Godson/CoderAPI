@@ -37,6 +37,7 @@
     <Folder Include="UI\coder-frontend\src\Home\components\" />
     <Folder Include="UI\coder-frontend\src\Home\pages\" />
     <Folder Include="UI\coder-frontend\src\problem\components\AIChatPanel\" />
+    <Folder Include="UI\coder-frontend\src\problem\components\UserSession\" />
     <Folder Include="UI\coder-frontend\src\problem\hooks\" />
     <Folder Include="UI\coder-frontend\src\problem\pages\ProblemDetailPage\" />
     <Folder Include="UI\coder-frontend\src\Utils\" />

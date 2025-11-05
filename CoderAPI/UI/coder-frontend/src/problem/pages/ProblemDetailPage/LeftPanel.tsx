@@ -1,5 +1,7 @@
 import ProblemDescription from "../../components/ProblemDescription";
 import { TabButton } from "./TabButton";
+import MySolutions from "../../components/MySolutions";
+import MySessions from "../../components/MySessions";
 
 export default function LeftPanel({
     activeTab,
@@ -32,8 +34,8 @@ export default function LeftPanel({
 
             <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
                 {activeTab === "description" && <ProblemDescription problem={problem} />}
-                {activeTab === "solutions" && <div className="text-sm text-zinc-500">/* My Solutions */</div>}
-                {activeTab === "sessions" && <div className="text-sm text-zinc-500">/* My Sessions */</div>}
+                {activeTab === "solutions" && <MySolutions problemId={problem.problemId} />}
+                {activeTab === "sessions" && <MySessions problemId={problem.problemId} />}
             </div>
         </div>
     );

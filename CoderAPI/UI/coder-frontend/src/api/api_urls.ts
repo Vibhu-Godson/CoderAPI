@@ -60,4 +60,10 @@ export const API_URLS = {
         getLanguages: `${BASE_URL}/api/ProblemDetail/Languages`,
         getStarterCode: `${BASE_URL}/api/ProblemDetail/StarterCode`,
     },
+    userProblem: {
+        listSolutions: '/api/UserProblem/ListSolutions',
+        listChats: '/api/UserProblem/ListChats',
+        solution: '/api/UserProblem/Solution',
+        chat: '/api/UserProblem/Chat',
+    },
 };

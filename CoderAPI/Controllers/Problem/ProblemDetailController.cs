@@ -1,9 +1,9 @@
 ﻿using CoderAPI.DTOs;
 using CoderAPI.Helper.Interface;
-using CoderAPI.Service.Interface;
+using CoderAPI.Service.Interface.Problem;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CoderAPI.Controllers
+namespace CoderAPI.Controllers.Problem
 {
     [ApiController]
     [Route("api/[controller]")]

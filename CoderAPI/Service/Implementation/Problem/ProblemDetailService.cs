@@ -1,9 +1,9 @@
 ﻿using CoderAPI.DTOs;
 using CoderAPI.Helper.Interface;
-using CoderAPI.Repository.Interface;
-using CoderAPI.Service.Interface;
+using CoderAPI.Repository.Interface.Problem;
+using CoderAPI.Service.Interface.Problem;
 
-namespace CoderAPI.Service.Implementation
+namespace CoderAPI.Service.Implementation.Problem
 {
     public class ProblemDetailService : IProblemDetailService
     {

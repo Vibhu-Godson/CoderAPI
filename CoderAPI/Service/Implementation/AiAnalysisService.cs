@@ -6,6 +6,7 @@ using CoderAPI.Helper.Interface;
 using CoderAPI.Messages;
 using CoderAPI.MicroService.LLM.Interface;
 using CoderAPI.Repository.Interface;
+using CoderAPI.Repository.Interface.Problem;
 using CoderAPI.Service.Interface;
 using System.Text.Json;
 

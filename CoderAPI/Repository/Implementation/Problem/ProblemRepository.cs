@@ -3,10 +3,10 @@ using CoderAPI.DTOs;
 using CoderAPI.DTOs.TestCase;
 using CoderAPI.Enum;
 using CoderAPI.Helper.Interface;
-using CoderAPI.Repository.Interface;
+using CoderAPI.Repository.Interface.Problem;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoderAPI.Repository.Implementation
+namespace CoderAPI.Repository.Implementation.Problem
 {
     public class ProblemRepository : IProblemRepository
     {

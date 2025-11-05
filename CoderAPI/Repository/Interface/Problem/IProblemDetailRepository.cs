@@ -1,6 +1,6 @@
 ﻿using CoderAPI.DTOs;
 
-namespace CoderAPI.Repository.Interface
+namespace CoderAPI.Repository.Interface.Problem
 {
     public interface IProblemDetailRepository
     {

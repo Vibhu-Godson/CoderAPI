@@ -6,12 +6,13 @@ using CoderAPI.Helper.Interface;
 using CoderAPI.Hubs;
 using CoderAPI.Messages;
 using CoderAPI.Repository.Interface;
-using CoderAPI.Service.Interface;
+using CoderAPI.Repository.Interface.Problem;
+using CoderAPI.Service.Interface.Problem;
 using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using static MassTransit.ValidationResultExtensions;
 
-namespace CoderAPI.Service.Implementation
+namespace CoderAPI.Service.Implementation.Problem
 {
     public class ProblemService : IProblemService
     {
@@ -132,9 +133,9 @@ namespace CoderAPI.Service.Implementation
                     .SendAsync("ReceiveTestCaseResult", new
                     {
                         UserTestCaseResultId = userTestCaseResultId,
-                        TestCaseId = tc.TestCaseId,
+                        tc.TestCaseId,
                         Input = tc.TestCaseDetail,
-                        ExpectedOutput = tc.ExpectedOutput,
+                        tc.ExpectedOutput,
                         Status = RunCodeStatus.Pending,
                         Stdout = "",
                         Stderr = "",

@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\NewFolder\" />
     <Folder Include="MicroService\SignalR\" />
     <Folder Include="UI\coder-frontend\src\auth\" />
     <Folder Include="UI\coder-frontend\src\common\" />

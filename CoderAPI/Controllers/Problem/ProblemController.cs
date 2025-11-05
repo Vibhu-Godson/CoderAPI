@@ -2,11 +2,12 @@
 using CoderAPI.Helper.Interface;
 using CoderAPI.Messages;
 using CoderAPI.Service.Interface;
+using CoderAPI.Service.Interface.Problem;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace CoderAPI.Controllers
+namespace CoderAPI.Controllers.Problem
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -100,7 +101,7 @@ namespace CoderAPI.Controllers
             try
             {
                 var userId = Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (_subscriptionHelper.isFreeUser(User) && !(await _aiAnalysisService.CanChat(userId)))
+                if (_subscriptionHelper.isFreeUser(User) && !await _aiAnalysisService.CanChat(userId))
                 {
                     return Forbid("This feature is available for premium users only. Please upgrade to a premium plan to access this feature.");
                 }

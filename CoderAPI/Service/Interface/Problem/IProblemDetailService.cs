@@ -1,6 +1,6 @@
 ﻿using CoderAPI.DTOs;
 
-namespace CoderAPI.Service.Interface
+namespace CoderAPI.Service.Interface.Problem
 {
     public interface IProblemDetailService
     {

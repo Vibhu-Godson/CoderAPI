@@ -1,7 +1,7 @@
 ﻿using CoderAPI.DTOs;
 using CoderAPI.Messages;
 
-namespace CoderAPI.Service.Interface
+namespace CoderAPI.Service.Interface.Problem
 {
     public interface IProblemService 
     {

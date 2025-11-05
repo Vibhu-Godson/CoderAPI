@@ -56,6 +56,9 @@ namespace CoderAPI.Repository.Implementation
                     ProblemDetail = problem.ProblemDetail,
                     DifficultyLevel = problem.DifficultyLevel,
                     IsLocked = problem.IsLocked ?? false,
+                    Hints = problem.Hints != null ? problem.Hints.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>(),
+                    AdditionalDetails = problem.AdditionalDetails != null ? problem.AdditionalDetails.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>(),
+                    AnalyticDetails = problem.AnalyticDetails != null ? problem.AnalyticDetails.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>(),
                     Tags = _context.ProblemTags
                         .Where(pt => pt.ProblemId == ProblemId)
                         .Select(pt => new TagString

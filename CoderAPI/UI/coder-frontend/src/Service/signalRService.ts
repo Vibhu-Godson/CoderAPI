@@ -18,6 +18,7 @@ type TestcaseUpdatePayload = {
 type ExecutionCompletedPayload = {
     userSolutionId: number;
     status: string;
+    message?: string;
 };
 
 class SignalRService {

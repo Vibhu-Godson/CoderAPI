@@ -13,5 +13,8 @@ namespace CoderAPI.DTOs
         public bool IsLocked { get; set; }
         public List<TagString> Tags { get; set; }
         public List<TestCaseDto> TestCases { get; set; }
+        public List<string> Hints { get; set; }
+        public List<string> AdditionalDetails { get; set; }
+        public List<string> AnalyticDetails { get; set; }
     }
 }

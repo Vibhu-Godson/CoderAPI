@@ -9,6 +9,10 @@ namespace CoderAPI.Messages
         public long UserSolutionId { get; set; }
         public string UserText { get; set; }
         public bool IsAfterSubmit { get; set; }
+        public bool IncludeCode { get; set; } = false;
+        public bool IncludeBoard { get; set; } = false;
+        public string? CodeContent { get; set; }  // if includeCode == true
+        public string? BoardData { get; set; }    // JSON string from tldraw export
     }
     public class LLMResponse
     {

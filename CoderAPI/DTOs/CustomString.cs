@@ -9,4 +9,8 @@
     {
         public long TagId { get; set; }
     }
+    public class Language : CustomString
+    {
+        public long ProblemDetailId { get; set; }
+    }
 }

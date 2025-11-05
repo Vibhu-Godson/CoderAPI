@@ -16,6 +16,7 @@ namespace CoderAPI.Service.Implementation
     public class ProblemService : IProblemService
     {
         private readonly IProblemRepository _problemRepository;
+        private readonly IProblemDetailRepository _problemDetailRepository;
         private readonly IUserSolutionRepository _userSolutionRepository;
         private readonly ITestCaseRepository _testCaseRepository;
         private readonly IBus _bus;
@@ -23,7 +24,7 @@ namespace CoderAPI.Service.Implementation
         private readonly IUserProblemSessionRepository _userProblemSessionRepository;
         private readonly ICustomLogger _logger;
 
-        public ProblemService(IProblemRepository problemRepository, IUserSolutionRepository userSolutionRepository, ITestCaseRepository testCaseRepository, ICustomLogger logger, IBus bus, IHubContext<CodeExecutionHub> hubContext, IUserProblemSessionRepository userProblemSessionRepository)
+        public ProblemService(IProblemRepository problemRepository, IUserSolutionRepository userSolutionRepository, ITestCaseRepository testCaseRepository, ICustomLogger logger, IBus bus, IHubContext<CodeExecutionHub> hubContext, IUserProblemSessionRepository userProblemSessionRepository, IProblemDetailRepository problemDetailRepository)
         {
             _problemRepository = problemRepository;
             _userSolutionRepository = userSolutionRepository;
@@ -32,6 +33,7 @@ namespace CoderAPI.Service.Implementation
             _logger = logger;
             _hubContext = hubContext;
             _userProblemSessionRepository = userProblemSessionRepository;
+            _problemDetailRepository = problemDetailRepository;
         }
 
         public async Task<ProblemDto> GetProblemById(long problemId)
@@ -111,8 +113,8 @@ namespace CoderAPI.Service.Implementation
 
                 // Getting all test cases for the problem and publishing to the bus
                 var testCases = await _testCaseRepository.GetTestcasesByProblem(request.ProblemId, request.IsSubmit);
-                
 
+                request.Code = (await _problemDetailRepository.GetHiddenCode(request.ProblemId, request.Language) ).Value + "\n" + request.Code;
                 foreach (var tc in testCases)
                 {
                     //aded user test case result with pending status in db 

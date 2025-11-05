@@ -68,6 +68,10 @@ export const problemApi = baseApi.injectEndpoints({
                 userText: string;
                 userSolutionId?: number;
                 isAfterSubmit?: boolean; 
+                includeCode?: boolean;
+                includeBoard?: boolean;
+                codeContent?: string;
+                boardData?: string;
             }
         >({
             query: (body) => ({

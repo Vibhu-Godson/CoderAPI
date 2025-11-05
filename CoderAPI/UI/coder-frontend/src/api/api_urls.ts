@@ -55,5 +55,9 @@ export const API_URLS = {
         updateTopicStatus: '/api/UserCourse/UpdateTopicStatus', 
         updateTopicAssetStatus: '/api/UserCourse/UpdateTopicAssetStatus', 
 
-    }
+    },
+    problemDetail: {
+        getLanguages: `${BASE_URL}/api/ProblemDetail/Languages`,
+        getStarterCode: `${BASE_URL}/api/ProblemDetail/StarterCode`,
+    },
 };

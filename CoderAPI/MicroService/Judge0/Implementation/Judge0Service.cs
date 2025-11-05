@@ -68,6 +68,7 @@ namespace CoderAPI.MicroService.Judge0.Implementation
                 "java" => 62,
                 "python" => 71,
                 "csharp" => 51,
+                "mysql" => 82,
                 _ => throw new ArgumentException($"Unsupported language: {lang}")
             };
         }

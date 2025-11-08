@@ -9,6 +9,7 @@ export const API_URLS = {
     auth: {
         login: `${BASE_URL}/api/Auth/login`,
         register: `${BASE_URL}/api/Auth/register`,
+        socialLogin: ``,
     },
     problem: {
         list: `${BASE_URL}/api/Problem`,

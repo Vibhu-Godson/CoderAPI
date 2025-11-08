@@ -16,7 +16,7 @@ import Navbar from './common/Navbar';
 export default function App() {
     return (
         <>
-            <Navbar isAuthenticated={true} setIsAuthenticated={() => { }} />
+            <Navbar/>
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />

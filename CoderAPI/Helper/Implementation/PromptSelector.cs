@@ -11,7 +11,7 @@ namespace CoderAPI.Helper.Implementation
 {
     public class PromptSelector : IPromptSelector
     {
-        public string BuildPrompt(ProblemDto problem, LLMAnalysisRequest request, List<TestCaseDto> EdgeCases, List<UserSessionChatDto> sessionChat, string userSolution)
+        public string BuildCodingProblemPrompt(ProblemDto problem, LLMAnalysisRequest request, List<TestCaseDto> EdgeCases, List<UserSessionChatDto> sessionChat, string userSolution)
         {
             var prompt = $@"
 SYSTEM:
@@ -717,6 +717,63 @@ If uncertain, lower rather than guess.
 Note: 
 1. Use the Analytic Notes to decide the appropriate teaching depth. Do not exceed the conceptual scope of this problem.
 2. See the previous chat for this session - its a live session like talking one-on-one so all the message above needs to be treated like a live conversation
+
+";
+            return prompt;
+        }
+
+        public string BuildOnboardingPrompt(string chat)
+        {
+            var prompt = $@"
+You are an information extraction system for AmCoder’s onboarding flow.
+
+Your job is to read the user’s message and extract ONLY the information explicitly provided by the user.  
+NEVER infer, guess, or hallucinate missing values.  
+If a field is not present in the message, return it as null.
+
+Return your answer strictly in the following JSON format:
+
+{{
+  ""currentRole"": string | null,
+  ""experience"": {{
+      ""company"": string | null,
+      ""role"": string | null,
+      ""startDate"": string | null,
+      ""enddate"": string | null,
+      ""description"": string | null
+  }} | null,
+  ""education"": {{
+      ""institute"": string | null,
+      ""degree"": string | null,
+      ""fieldOfStudy"": string | null,
+      ""completionYear"": string | null
+  }} | null,
+  ""project"": {{
+      ""title"": string | null,
+      ""description"": string | null,
+      ""techStacks"": string | null,
+      ""projectLink"": string | null
+  }} | null,
+  ""motivation"": string | null
+}}
+
+Definition of fields:
+- currentRole should be one of: ""student"", ""professional"", ""jobseeker"" only if explicitly clear.
+- experience refers to the LATEST or MOST RECENT job mentioned.
+- education refers to the LATEST or MOST RECENT education mentioned.
+- project refers to one project (prefer the latest / most relevant if multiple).
+- motivation is any statement about goals, dreams, ambitions, or reasons for learning.
+
+Rules:
+1. Do not invent dates, institutes, roles, companies or any data not in message.
+2. If multiple items are present (multiple jobs, multiple projects), choose the most recent one.
+3. Format dates exactly as the user wrote them. Do not convert formats.
+4. If user expresses desire or motivation, put it in the motivation field.
+5. If information is ambiguous, return null for that field.
+6. Output only the JSON. No explanation.
+
+User Message:
+""{chat}""
 
 ";
             return prompt;

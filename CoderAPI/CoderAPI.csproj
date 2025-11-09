@@ -40,6 +40,10 @@
     <Folder Include="UI\coder-frontend\src\problem\components\UserSession\" />
     <Folder Include="UI\coder-frontend\src\problem\hooks\" />
     <Folder Include="UI\coder-frontend\src\problem\pages\ProblemDetailPage\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\components\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\apis\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\hooks\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\pages\" />
     <Folder Include="UI\coder-frontend\src\Utils\" />
     <Folder Include="UI\coder-frontend\src\Plan\components\" />
     <Folder Include="UI\coder-frontend\src\Plan\pages\" />

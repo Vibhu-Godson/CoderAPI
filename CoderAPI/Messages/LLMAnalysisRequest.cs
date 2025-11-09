@@ -22,7 +22,7 @@ namespace CoderAPI.Messages
 
     }
 
-    public class GeminiResponse
+    public class GeminiProblemChatResponse
     {
         [JsonPropertyName("verbal_reply")]
         public string VerbalReply { get; set; }

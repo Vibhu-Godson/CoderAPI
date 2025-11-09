@@ -42,7 +42,7 @@ namespace CoderAPI.MicroService.LLM.Implementation
                 };
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
                 );
                 request.Headers.Add("X-goog-api-key", apiKey);
                 request.Content = new StringContent(

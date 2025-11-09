@@ -67,4 +67,12 @@ export const API_URLS = {
         solution: '/api/UserProblem/Solution',
         chat: '/api/UserProblem/Chat',
     },
+    userDetails: {
+        currentRole: `${BASE_URL}/api/UserDetails/CurrentRole`,
+        experience: `${BASE_URL}/api/UserDetails/Experience`,
+        education: `${BASE_URL}/api/UserDetails/Education`,
+        project: `${BASE_URL}/api/UserDetails/Project`,
+        motivation: `${BASE_URL}/api/UserDetails/Motivation`,
+        chat: `${BASE_URL}/api/UserDetails/Chat`
+    },
 };

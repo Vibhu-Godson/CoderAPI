@@ -12,6 +12,7 @@ import { BundleDetailsPage } from './Courses/pages/BundleDetailsPage';
 import { CategoryCoursesPage } from './Courses/pages/CategoryCoursesPage';
 import { MyCoursePage } from './Courses/pages/MyCoursePage';
 import Navbar from './common/Navbar';
+import OnboardingPage from "./UserOnboard/pages/OnboardingPage"
 
 export default function App() {
     return (
@@ -29,6 +30,8 @@ export default function App() {
                 <Route path="/bundle/:id" element={<BundleDetailsPage />} />
                 <Route path="/category/:id" element={<CategoryCoursesPage />} />
                 <Route path="/myCourses/:userCourseId" element={<MyCoursePage />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+
             </Routes>
         </>
     );

@@ -45,6 +45,9 @@ export interface MotivationRequest {
     value: string;
 }
 
+export interface SkillsRequest {
+    value: string;
+}
 // -------------------------
 // ✅ RTK Query Endpoints
 // -------------------------
@@ -96,6 +99,14 @@ export const userDetailApi = baseApi.injectEndpoints({
                 body,
             }),
         }),
+        setSkills: builder.mutation<ApiResponse, SkillsRequest>({
+            query: (body) => ({
+                url: API_URLS.userDetails.skills,
+                method: "POST",
+                body,
+            }),
+        }),
+
     }),
 });
 
@@ -106,4 +117,5 @@ export const {
     useSetEducationMutation,
     useSetProjectMutation,
     useSetMotivationMutation,
+    useSetSkillsMutation,
 } = userDetailApi;

@@ -4,10 +4,12 @@ import { EducationDto } from "../types";
 export default function StepEducation({
     initial,
     onSubmit,
+    onBack,
     isSaving,
 }: {
     initial?: EducationDto;
     onSubmit: (val: EducationDto) => void;
+    onBack?: () => void;
     isSaving?: boolean;
 }) {
     const [form, setForm] = useState<EducationDto>({
@@ -23,6 +25,7 @@ export default function StepEducation({
     return (
         <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-semibold mb-4">Highest Qualification (Latest)</h3>
+
             <div className="grid md:grid-cols-2 gap-4">
                 <input
                     className="rounded-xl border border-slate-300 px-3 py-2"
@@ -32,7 +35,7 @@ export default function StepEducation({
                 />
                 <input
                     className="rounded-xl border border-slate-300 px-3 py-2"
-                    placeholder="Degree (e.g., BTech)"
+                    placeholder="Degree"
                     value={form.degree ?? ""}
                     onChange={(e) => setForm({ ...form, degree: e.target.value })}
                 />
@@ -44,18 +47,27 @@ export default function StepEducation({
                 />
                 <input
                     className="rounded-xl border border-slate-300 px-3 py-2"
-                    placeholder="Completion Year (e.g., 2024)"
+                    placeholder="Completion Year"
                     value={form.completionYear ?? ""}
                     onChange={(e) => setForm({ ...form, completionYear: e.target.value })}
                 />
             </div>
-            <button
-                onClick={() => onSubmit(form)}
-                disabled={disabled}
-                className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white disabled:opacity-50"
-            >
-                {isSaving ? "Saving..." : "Save & Continue"}
-            </button>
+
+            <div className="flex gap-3 mt-4">
+                {onBack && (
+                    <button onClick={onBack} className="px-4 py-2 bg-gray-300 rounded-xl">
+                        Back
+                    </button>
+                )}
+
+                <button
+                    onClick={() => onSubmit(form)}
+                    disabled={disabled}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-xl disabled:opacity-50"
+                >
+                    {isSaving ? "Saving..." : "Save & Continue"}
+                </button>
+            </div>
         </div>
     );
 }

@@ -125,6 +125,20 @@ namespace CoderAPI.Service.Implementation.UserDetail
             }
         }
 
+        public async Task<CustomString> GetRoleName(long userId)
+        {
+            try
+            {
+                var role = await _userDetailsRepository.GetRoleName(userId);
+                return new CustomString { Value = role };
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Role name for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
         public async Task<UserOnboardChatResponse> GetUserChatResponse(CustomString chat, long userId)
         {
             try
@@ -137,6 +151,93 @@ namespace CoderAPI.Service.Implementation.UserDetail
             catch(Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"ServerError: unable to get user chat resposne", ex);
+                throw;
+            }
+        }
+
+        public async Task<UserEducationDto> GetUserEducation(long userId)
+        {
+            try
+            {
+                var edu = await _userDetailsRepository.GetUserEducation(userId);
+                var education = JsonSerializer.Deserialize<UserEducationDto>(edu);
+                return education;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Education for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<UserExperienceDto> GetUserExperience(long userId)
+        {
+            try
+            {
+                var exp = await _userDetailsRepository.GetUserExperience(userId);
+                var userExp = JsonSerializer.Deserialize<UserExperienceDto>(exp);
+                return userExp;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Experience for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<CustomString> GetUserMotivation(long userId)
+        {
+            try
+            {
+                var motivation = await _userDetailsRepository.GetUserMotivation(userId);
+                return new CustomString { Value = motivation };
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Motivation for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<UserProjectDto> GetUserProject(long userId)
+        {
+            try
+            {
+                var project = await _userDetailsRepository.GetUserProject(userId);
+                var userProject = JsonSerializer.Deserialize<UserProjectDto>(project);
+                return userProject;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Project for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<CustomString> GetUserSkills(long userId)
+        {
+            try
+            {
+                var skills = await _userDetailsRepository.GetUserSkills(userId);
+                return new CustomString { Value = skills };
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Skills for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<Dictionary<string, string>> UserOnboardingStatus(long userId)
+        {
+            try
+            {
+                var response = await _userDetailsRepository.UserOnboardingStatus(userId);
+                return response;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get user onboarding status for userId: {userId}\n{ex.Message}", ex);
                 throw;
             }
         }

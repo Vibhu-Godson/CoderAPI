@@ -37,6 +37,10 @@ async function mockExtract(userText: string): Promise<LLMExtraction> {
     if (projectMatch) {
         out.project = { title: projectMatch[1].trim() };
     }
+    if (lower.includes("skills") || lower.includes("know") || lower.includes("expert")) {
+        const match = userText.match(/skills?\s*[:\-]?\s*(.*)/i);
+        if (match) out.skills = match[1];
+    }
 
     // motivation catch-all
     if (lower.includes("because") || lower.includes("want") || lower.includes("goal")) {

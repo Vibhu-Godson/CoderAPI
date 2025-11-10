@@ -18,11 +18,11 @@ import StepRole from "../components/StepRole";
 import StepExperience from "../components/StepExperience";
 import StepEducation from "../components/StepEducation";
 import StepProject from "../components/StepProject";
+import StepSkills from "../components/StepSkills";
 import StepMotivation from "../components/StepMotivation";
 
 import {
     useSendChatMessageMutation,
-    type UserChatResponse,
 } from "../apis/userChatApi";
 
 import {
@@ -31,45 +31,33 @@ import {
     useSetExperienceMutation,
     useSetProjectMutation,
     useSetMotivationMutation,
+    useSetSkillsMutation,
 } from "../apis/userDetailApi";
 
-// fallback uid
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-// convert backend string to RoleKey
-const asRoleKey = (val: string | null): RoleKey | undefined => {
-    if (!val) return undefined;
-    const allowed: RoleKey[] = [
-        "student",
-        "professional_0_2",
-        "professional_2_5",
-        "professional_5_10",
-        "professional_10_plus",
-        "job_seeker",
-    ];
-    return (allowed as string[]).includes(val) ? (val as RoleKey) : undefined;
-};
+const allowedRoles: RoleKey[] = [
+    "student",
+    "professional_0_2",
+    "professional_2_5",
+    "professional_5_10",
+    "professional_10_plus",
+    "job_seeker",
+];
 
-// convert API response to internal partial
-const normalizeChat = (r: UserChatResponse): LLMExtraction => ({
+const asRoleKey = (val: string | null): RoleKey | undefined =>
+    val && allowedRoles.includes(val as RoleKey) ? (val as RoleKey) : undefined;
+
+const normalizeChat = (r: any): LLMExtraction => ({
     role: asRoleKey(r.currentRole),
     education: r.education ?? undefined,
     experience: r.experience ?? undefined,
     project: r.project ?? undefined,
+    skills: r.skills ?? undefined,
     motivation: r.motivation ?? undefined,
 });
 
-function toSafe<T extends Record<string, any>>(obj: Partial<T>): Record<keyof T, string> {
-    const out: any = {};
-    for (const k in obj) {
-        const val = obj[k];
-        out[k] = val === null || val === undefined ? "" : String(val);
-    }
-    return out;
-}
-
-
-// clean null/undefined → empty strings
+// Replace null → ""
 function clean<T extends Record<string, any>>(obj: Partial<T> | null | undefined): T {
     const out: any = {};
     if (!obj) return out as T;
@@ -103,14 +91,12 @@ export default function OnboardingPage() {
     const [saveEdu] = useSetEducationMutation();
     const [saveExp] = useSetExperienceMutation();
     const [saveProject] = useSetProjectMutation();
+    const [saveSkills] = useSetSkillsMutation();
     const [saveMotivation] = useSetMotivationMutation();
 
-    // redirect after finishing onboarding
     useEffect(() => {
         if (state.step === "done") {
-            const t = setTimeout(() => {
-                navigate("/home");
-            }, 1500);
+            const t = setTimeout(() => navigate("/home"), 1500);
             return () => clearTimeout(t);
         }
     }, [state.step, navigate]);
@@ -120,66 +106,118 @@ export default function OnboardingPage() {
         setState((s) => ({ ...s, chat: [...s.chat, msg] }));
     };
 
+    const goBack = () => {
+        const order: StepKey[] = [
+            "role",
+            "education",
+            "experience",
+            "project",
+            "skills",
+            "motivation",
+            "done",
+        ];
+        const idx = order.indexOf(state.step);
+        if (idx > 0) {
+            const prev = order[idx - 1];
+            pushChat("bot", `Going back to ${prev} step...`);
+            setState((s) => ({ ...s, step: prev }));
+        }
+    };
+
     const handleChatUserSend = async (text: string) => {
         pushChat("user", text);
         const res = await sendChat({ value: text }).unwrap();
         await applyLLMExtraction(normalizeChat(res));
     };
 
-    // ✅ When LLM extracts → auto-fill + auto-save + jump
     const applyLLMExtraction = async (res: LLMExtraction) => {
 
+        // ============= ROLE =============
         if (res.role) {
+            pushChat("bot", "Updating your role...");
+            await new Promise(r => setTimeout(r, 300));
+
             await saveRole({ value: res.role });
             setState((s) => ({ ...s, role: res.role }));
-            pushChat("bot", `Got it — you are a ${res.role.replaceAll("_", " ")}.`);
+
+            pushChat("bot", `You are a ${res.role.replaceAll("_", " ")}.`);
             setState((s) => ({ ...s, step: "education" }));
         }
 
+        // ============= EDUCATION =============
         if (res.education) {
             const cleaned = clean<EducationDto>(res.education);
-            await saveEdu(cleaned as any);
+
             setState((s) => ({ ...s, education: cleaned }));
-            pushChat("bot", `Recorded your education at ${cleaned.institute}.`);
+            pushChat("bot", "Filling your education details...");
+            await new Promise(r => setTimeout(r, 400));
+
+            await saveEdu(cleaned as any);
+            pushChat("bot", `Saved your education at ${cleaned.institute}.`);
+
             setState((s) => ({ ...s, step: "experience" }));
         }
 
+        // ============= EXPERIENCE =============
         if (res.experience) {
             const cleaned = clean<ExperienceDto>(res.experience);
-            await saveExp(cleaned as any);
+
             setState((s) => ({ ...s, experience: cleaned }));
-            pushChat("bot", `Added your experience at ${cleaned.company}.`);
+            pushChat("bot", "Adding your work experience...");
+            await new Promise(r => setTimeout(r, 400));
+
+            await saveExp(cleaned as any);
+            pushChat("bot", `Saved your experience at ${cleaned.company}.`);
+
             setState((s) => ({ ...s, step: "project" }));
         }
 
+        // ============= PROJECT =============
         if (res.project) {
             const cleaned = clean<ProjectDto>(res.project);
-            await saveProject(cleaned as any);
+
             setState((s) => ({ ...s, project: cleaned }));
-            pushChat("bot", `Your project "${cleaned.title}" looks great!`);
+            pushChat("bot", "Filling your project details...");
+            await new Promise(r => setTimeout(r, 400));
+
+            await saveProject(cleaned as any);
+            pushChat("bot", `Saved your project "${cleaned.title}".`);
+
+            setState((s) => ({ ...s, step: "skills" }));
+        }
+
+        // ============= SKILLS =============
+        if (res.skills) {
+            setState((s) => ({ ...s, skills: res.skills }));
+            pushChat("bot", "Recording your skills...");
+            await new Promise(r => setTimeout(r, 400));
+
+            await saveSkills({ value: res.skills });
+            pushChat("bot", "Skills saved!");
+
             setState((s) => ({ ...s, step: "motivation" }));
         }
 
+        // ============= MOTIVATION =============
         if (res.motivation) {
-            await saveMotivation({ value: res.motivation });
             setState((s) => ({ ...s, motivation: res.motivation }));
+            pushChat("bot", "Saving your motivation...");
+            await new Promise(r => setTimeout(r, 300));
+
+            await saveMotivation({ value: res.motivation });
             pushChat("bot", "Motivation saved!");
+
             setState((s) => ({ ...s, step: "done" }));
         }
     };
 
-    // ✅ Form submission (manual entry)
     const handleFormSubmit = async (key: StepKey, data: any) => {
-        if (key === "role") {
-            pushChat("user", `I am a ${String(data).replaceAll("_", " ")}`);
-        } else {
-            pushChat("user", JSON.stringify(data));
-        }
+        pushChat("user", key === "role" ? `I am a ${data}` : JSON.stringify(data));
 
         if (key === "role") {
             await saveRole({ value: data });
             setState((s) => ({ ...s, role: data, step: "education" }));
-            pushChat("bot", "Great! Let's add your latest education.");
+            pushChat("bot", "Great! Let's add your education.");
         }
 
         if (key === "education") {
@@ -191,13 +229,19 @@ export default function OnboardingPage() {
         if (key === "experience") {
             await saveExp(data);
             setState((s) => ({ ...s, experience: data, step: "project" }));
-            pushChat("bot", "Awesome! Let's add one recent project.");
+            pushChat("bot", "Awesome! Let's add a project.");
         }
 
         if (key === "project") {
             await saveProject(data);
-            setState((s) => ({ ...s, project: data, step: "motivation" }));
-            pushChat("bot", "Almost done! What motivates you?");
+            setState((s) => ({ ...s, project: data, step: "skills" }));
+            pushChat("bot", "Great! Add some skills now.");
+        }
+
+        if (key === "skills") {
+            await saveSkills({ value: data });
+            setState((s) => ({ ...s, skills: data, step: "motivation" }));
+            pushChat("bot", "Nice! What motivates you?");
         }
 
         if (key === "motivation") {
@@ -208,7 +252,7 @@ export default function OnboardingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex justify-center items-start py-10 px-4">
+        <div className="h-screen bg-gray-100 flex justify-center items-center px-4">
             <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden">
 
                 <div className="flex h-[80vh]">
@@ -218,16 +262,20 @@ export default function OnboardingPage() {
                         <ChatPanel chat={state.chat} onSend={handleChatUserSend} />
                     </div>
 
-                    {/* RIGHT FORM PANEL */}
+                    {/* RIGHT FORMS */}
                     <div className="flex-1 p-6 overflow-y-auto">
+
                         {state.step === "role" && (
-                            <StepRole onSelect={(v) => handleFormSubmit("role", v)} />
+                            <StepRole
+                                onSelect={(v) => handleFormSubmit("role", v)}
+                            />
                         )}
 
                         {state.step === "education" && (
                             <StepEducation
                                 initial={state.education}
                                 onSubmit={(v) => handleFormSubmit("education", v)}
+                                onBack={goBack}
                             />
                         )}
 
@@ -235,6 +283,7 @@ export default function OnboardingPage() {
                             <StepExperience
                                 initial={state.experience}
                                 onSubmit={(v) => handleFormSubmit("experience", v)}
+                                onBack={goBack}
                             />
                         )}
 
@@ -242,6 +291,15 @@ export default function OnboardingPage() {
                             <StepProject
                                 initial={state.project}
                                 onSubmit={(v) => handleFormSubmit("project", v)}
+                                onBack={goBack}
+                            />
+                        )}
+
+                        {state.step === "skills" && (
+                            <StepSkills
+                                initial={state.skills}
+                                onSubmit={(v) => handleFormSubmit("skills", v)}
+                                onBack={goBack}
                             />
                         )}
 
@@ -249,6 +307,7 @@ export default function OnboardingPage() {
                             <StepMotivation
                                 initial={state.motivation || ""}
                                 onSubmit={(v) => handleFormSubmit("motivation", v)}
+                                onBack={goBack}
                             />
                         )}
 
@@ -257,11 +316,11 @@ export default function OnboardingPage() {
                                 ✅ Your onboarding is complete!
                             </div>
                         )}
+
                     </div>
 
                 </div>
             </div>
         </div>
     );
-
 }

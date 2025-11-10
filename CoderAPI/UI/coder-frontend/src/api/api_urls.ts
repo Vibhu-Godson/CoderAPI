@@ -73,6 +73,7 @@ export const API_URLS = {
         education: `${BASE_URL}/api/UserDetails/Education`,
         project: `${BASE_URL}/api/UserDetails/Project`,
         motivation: `${BASE_URL}/api/UserDetails/Motivation`,
+        skills: `${BASE_URL}/api/UserDetails/Skills`,
         chat: `${BASE_URL}/api/UserDetails/Chat`
     },
 };

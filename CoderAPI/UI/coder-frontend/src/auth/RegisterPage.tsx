@@ -147,7 +147,7 @@ export default function RegisterPage() {
                     msg: "Account created successfully!",
                     kind: "success",
                 });
-                setTimeout(() => navigate("/login"), 500);
+                setTimeout(() => navigate("/onboarding"), 500);
             } else {
                 setToast({
                     open: true,
@@ -344,7 +344,7 @@ export default function RegisterPage() {
 
                 <p className="text-center text-sm text-slate-600 mt-4">
                     Already have an account?{" "}
-                    <Link to="/onboarding" className="text-indigo-600 hover:underline">
+                    <Link to="/login" className="text-indigo-600 hover:underline">
                         Sign in
                     </Link>
                 </p>

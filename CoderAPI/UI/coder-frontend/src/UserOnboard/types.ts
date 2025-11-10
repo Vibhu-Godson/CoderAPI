@@ -18,6 +18,7 @@ export type StepKey =
     | "experience"
     | "education"
     | "project"
+    | "skills"
     | "motivation"
     | "done";
 
@@ -49,6 +50,7 @@ export interface OnboardingState {
     education?: EducationDto;
     experience?: ExperienceDto;
     project?: ProjectDto;
+    skills?: string| null;
     motivation?: string | null;
     chat: ChatMessage[];
 }
@@ -58,5 +60,6 @@ export interface LLMExtraction {
     education?: Partial<EducationDto>;
     experience?: Partial<ExperienceDto>;
     project?: Partial<ProjectDto>;
+    skills?: string | null;
     motivation?: string | null;
 }

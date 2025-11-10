@@ -173,6 +173,141 @@ namespace CoderAPI.Repository.Implementation.User
             }
         }
 
+        public async Task<string> GetRoleName(long userId)
+        {
+            try
+            {
+                var roleName = await _context.UserDetails
+                    .Where(ud => ud.UserId == userId)
+                    .Select(ud => ud.CurrentRole)
+                    .FirstOrDefaultAsync();
+                
+                return roleName;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get Role Name for userId: {userId}", ex);
+                throw;
+            }
+        }
+
+        public async Task<string> GetUserEducation(long userId)
+        {
+            try
+            {
+                var education = await _context.UserDetails
+                    .Where(ud => ud.UserId == userId)
+                    .Select(ud => ud.LatestEducation)
+                    .FirstOrDefaultAsync();
+
+                return education;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get User Education for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<string> GetUserExperience(long userId)
+        {
+            try
+            {
+                var exp = await _context.UserDetails
+                    .Where(ud => ud.UserId == userId)
+                    .Select(ud => ud.LatestExperience)
+                    .FirstOrDefaultAsync();
+
+                return exp;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get User Experience for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<string> GetUserMotivation(long userId)
+        {
+            try
+            {
+                var motivation = await _context.UserDetails
+                    .Where(ud => ud.UserId == userId)
+                    .Select(ud => ud.LatestEducation)
+                    .FirstOrDefaultAsync();
+
+                return motivation;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get User Motivation for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<string> GetUserProject(long userId)
+        {
+            try
+            {
+                var project = await _context.UserDetails
+                    .Where(ud => ud.UserId == userId)
+                    .Select(ud => ud.LatestProject)
+                    .FirstOrDefaultAsync();
+
+                return project;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get User Project for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<string> GetUserSkills(long userId)
+        {
+            try
+            {
+                var skills = await _context.UserDetails
+                    .Where(ud => ud.UserId == userId)
+                    .Select(ud => ud.LatestEducation)
+                    .FirstOrDefaultAsync();
+
+                return skills;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get User Skills for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<Dictionary<string,string>> UserOnboardingStatus(long userId)
+        {
+            try
+            {
+                var userDetails = await _context.UserDetails
+                    .AsNoTracking()
+                    .Where(ud => ud.UserId == userId)
+                    .FirstOrDefaultAsync();
+
+                if (userDetails == null) return [];
+                var obj = new Dictionary<string, string>();
+                if (userDetails.CurrentRole != null) obj["role"] = userDetails.CurrentRole;
+                if (userDetails.LatestEducation != null) obj["education"] = userDetails.LatestEducation;
+                if (userDetails.LatestExperience != null) obj["Experience"] = userDetails.LatestExperience;
+                if (userDetails.LatestProject != null) obj["Project"] = userDetails.LatestProject;
+                if (userDetails.Skills != null) obj["Skills"] = userDetails.Skills;
+                if (userDetails.Motivation != null) obj["Motivation"] = userDetails.Motivation;
+
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get User Education for userId: {userId}\n{ex.Message}", ex);
+                throw;
+            }
+        }
+
         private async Task<UserDetail> AddUserDetails(long userId)
         {
             var userDetails = new UserDetail

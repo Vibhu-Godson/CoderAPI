@@ -94,10 +94,10 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white px-4">
             <div className="w-full max-w-md bg-white shadow-xl rounded-2xl border border-slate-200 p-6">
                 <h2 className="text-center text-2xl font-semibold text-slate-900">
-                    Welcome back
+                    Hey Coder, Welcome back!
                 </h2>
                 <p className="text-center text-sm text-slate-500">
-                    Sign in to continue
+                    Sign in on AmCoder to continue
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">

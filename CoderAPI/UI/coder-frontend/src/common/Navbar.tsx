@@ -130,6 +130,10 @@ export default function Navbar() {
                             <Link to="/settings" className="block px-4 py-3 hover:bg-slate-100">
                                 Settings
                             </Link>
+                            <Link to="/feedback" className="block px-4 py-3 hover:bg-slate-100">
+                                Feedback
+                            </Link>
+                            
                             <button
                                 onClick={handleLogout}
                                 className="block w-full text-left px-4 py-3 text-red-600 hover:bg-red-50"

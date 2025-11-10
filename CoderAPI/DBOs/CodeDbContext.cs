@@ -57,6 +57,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<UserDetail> UserDetails { get; set; }
 
+    public virtual DbSet<UserFeedback> UserFeedbacks { get; set; }
+
     public virtual DbSet<UserPlan> UserPlans { get; set; }
 
     public virtual DbSet<UserProblemSession> UserProblemSessions { get; set; }
@@ -288,6 +290,19 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserDetails)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserDetai__UserI__7755B73D");
+        });
+
+        modelBuilder.Entity<UserFeedback>(entity =>
+        {
+            entity.HasKey(e => e.UserFeedbackId).HasName("PK__UserFeed__4E2DB6D742E558E8");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Status).HasDefaultValue("PENDING");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserFeedbacks)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserFeedb__UserI__7C1A6C5A");
         });
 
         modelBuilder.Entity<UserPlan>(entity =>

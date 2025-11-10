@@ -34,6 +34,7 @@
     <Folder Include="UI\coder-frontend\src\Courses\components\" />
     <Folder Include="UI\coder-frontend\src\Courses\pages\" />
     <Folder Include="UI\coder-frontend\src\Courses\types\" />
+    <Folder Include="UI\coder-frontend\src\Feedback\apis\" />
     <Folder Include="UI\coder-frontend\src\Home\components\" />
     <Folder Include="UI\coder-frontend\src\Home\pages\" />
     <Folder Include="UI\coder-frontend\src\problem\components\AIChatPanel\" />

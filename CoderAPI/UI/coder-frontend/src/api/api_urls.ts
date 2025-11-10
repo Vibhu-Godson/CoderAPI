@@ -76,4 +76,9 @@ export const API_URLS = {
         skills: `${BASE_URL}/api/UserDetails/Skills`,
         chat: `${BASE_URL}/api/UserDetails/Chat`
     },
+    feedback: {
+        list: "/api/UserFeedback/List",
+        get: "/api/UserFeedback",
+        add: "/api/UserFeedback/Add",
+    },
 };

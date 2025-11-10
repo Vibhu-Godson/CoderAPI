@@ -11,6 +11,9 @@ import { CourseDetailsPage } from './Courses/pages/CourseDetailsPage';
 import { BundleDetailsPage } from './Courses/pages/BundleDetailsPage';
 import { CategoryCoursesPage } from './Courses/pages/CategoryCoursesPage';
 import { MyCoursePage } from './Courses/pages/MyCoursePage';
+import FeedbackListPage from './Feedback/pages/FeedbackListPage';
+import FeedbackAddPage from './Feedback/pages/FeedbackAddPage';
+import FeedbackDetailPage from './Feedback/pages/FeedbackDetailPage';
 import Navbar from './common/Navbar';
 import OnboardingPage from "./UserOnboard/pages/OnboardingPage"
 
@@ -31,6 +34,9 @@ export default function App() {
                 <Route path="/category/:id" element={<CategoryCoursesPage />} />
                 <Route path="/myCourses/:userCourseId" element={<MyCoursePage />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/feedback" element={<FeedbackListPage />} />
+                <Route path="/feedback/add" element={<FeedbackAddPage />} />
+                <Route path="/feedback/:id" element={<FeedbackDetailPage />} />
 
             </Routes>
         </>

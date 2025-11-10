@@ -2,6 +2,7 @@
 using CoderAPI.DTOs.User;
 using CoderAPI.Helper.Interface;
 using CoderAPI.Service.Interface.UserDetails;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Claims;
@@ -10,6 +11,7 @@ namespace CoderAPI.Controllers.Users
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserDetailsController : ControllerBase
     {
         private readonly IUserDetailsService _userDetailService;

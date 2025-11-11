@@ -69,5 +69,20 @@ namespace CoderAPI.Controllers.Feedback
                 return StatusCode(500, $"Internal server error\nunable to add user feedback.\n{ex.Message}\n\n{ex.StackTrace}");
             }
         }
+
+        [HttpGet("Reviews")]
+        public async Task<ActionResult<ListDto<UserReviews>>> GetUserReviews()
+        {
+            try
+            {
+                var response = await _userFeedbackService.GetUserReviews();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, "unable to get user reviews." + ex.Message, ex);
+                return StatusCode(500, $"Internal server error\nunable to get user reviews.\n{ex.Message}\n\n{ex.StackTrace}");
+            }
+        }
     }
 }

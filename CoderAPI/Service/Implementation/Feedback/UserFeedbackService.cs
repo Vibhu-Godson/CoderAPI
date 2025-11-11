@@ -66,5 +66,23 @@ namespace CoderAPI.Service.Implementation.Feedback
                 throw;
             }
         }
+
+        public async Task<ListDto<UserReviews>> GetUserReviews()
+        {
+            try
+            {
+                var response = await _userFeedbackRepository.GetUserReviews();
+                return new ListDto<UserReviews>
+                {
+                    Items = response,
+                    TotalCount = response.Count
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, "ServiceError: unable to get user reviews." + ex.Message, ex);
+                throw;
+            }
+        }
     }
 }

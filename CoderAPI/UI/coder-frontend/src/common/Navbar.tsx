@@ -133,6 +133,9 @@ export default function Navbar() {
                             <Link to="/feedback" className="block px-4 py-3 hover:bg-slate-100">
                                 Feedback
                             </Link>
+                            <Link to="/contact-us" className="block px-4 py-3 hover:bg-slate-100">
+                                Contact Us
+                            </Link>
                             
                             <button
                                 onClick={handleLogout}

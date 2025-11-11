@@ -29,6 +29,7 @@ namespace CoderAPI.Repository.Implementation.Feedback
                     DeviceInfo = userFeedback.DeviceInfo,
                     BrowserInfo = userFeedback.BrowserInfo,
                     AppVersion = userFeedback.AppVersion,
+                    Rating = userFeedback.Rating,
                     Status = "Pending",
                     CreatedOn = DateTime.UtcNow,
                     IsActive = true,
@@ -50,7 +51,7 @@ namespace CoderAPI.Repository.Implementation.Feedback
             try
             {
                 var userFeedbacks = await _context.UserFeedbacks
-                    .Where(uf => uf.UserId == userId && uf.IsActive)
+                    .Where(uf => uf.UserId == userId && uf.IsActive && uf.FeedbackType != "Review")
                     .Select(uf => new UserFeedbackBar
                     {
                         UserFeedbackId = uf.UserFeedbackId,
@@ -92,6 +93,29 @@ namespace CoderAPI.Repository.Implementation.Feedback
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"DbError: unable to get user feedback by id:{userFeedbackId} for userId:{userId}" + ex.Message, ex);
+                throw;
+            }
+        }
+
+        public async Task<List<UserReviews>> GetUserReviews()
+        {
+            try
+            {
+                var response = await _context.UserFeedbacks
+                    .Where(uf => uf.FeedbackType == "Review")
+                    .Select(uf => new UserReviews
+                    {
+                        Name = uf.User.FirstName + " " + uf.User.LastName,
+                        Image = uf.User.ProfileImage,
+                        Text = uf.FeedbackText,
+                        Rating = uf.Rating ?? 0
+                    })
+                    .ToListAsync();
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, "DbError: unable to get user reviews." + ex.Message, ex);
                 throw;
             }
         }

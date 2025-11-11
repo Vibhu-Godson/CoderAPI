@@ -47,6 +47,8 @@ public partial class UserFeedback
 
     public long? UpdatedBy { get; set; }
 
+    public int? Rating { get; set; }
+
     [ForeignKey("UserId")]
     [InverseProperty("UserFeedbacks")]
     public virtual User User { get; set; } = null!;

@@ -1,9 +1,9 @@
 import { baseApi } from "../../api/baseApi";
 import { API_URLS } from "../../api/api_urls";
 
-/* ---------------------------------------------
-   Interfaces: Response & Request models
-----------------------------------------------*/
+/* ----------------------------------------------------
+   Interfaces
+-----------------------------------------------------*/
 
 export interface FeedbackListItem {
     userFeedbackId: number;
@@ -21,10 +21,11 @@ export interface FeedbackDetailResponse {
     userFeedbackId: number;
     feedbackType: string;
     feedbackText: string;
-    feedbackImages?: string | null;
+    feedbackImages: string[] | null;
     deviceInfo?: string | null;
     browserInfo?: string | null;
     appVersion?: string | null;
+    rating?: number | null;
     status: string;
     createdOn: string;
 }
@@ -32,10 +33,11 @@ export interface FeedbackDetailResponse {
 export interface AddFeedbackRequest {
     feedbackType: string;
     feedbackText?: string;
-    feedbackImages?: string | null;
+    feedbackImages: string[] | null;
     deviceInfo?: string | null;
     browserInfo?: string | null;
     appVersion?: string | null;
+    rating?: number | null;
 }
 
 export interface AddFeedbackResponse {
@@ -43,13 +45,24 @@ export interface AddFeedbackResponse {
     message: string;
 }
 
-/* ---------------------------------------------
-   RTK Query API
-----------------------------------------------*/
+export interface ReviewItem {
+    name: string;
+    image: string;
+    text: string;
+    rating: number;
+}
+
+export interface ReviewListResponse {
+    items: ReviewItem[];
+    totalCount: number;
+}
+
+/* ----------------------------------------------------
+   RTK Query
+-----------------------------------------------------*/
 
 export const feedbackApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        // GET /api/UserFeedback/List
         getFeedbackList: builder.query<FeedbackListResponse, void>({
             query: () => ({
                 url: API_URLS.feedback.list,
@@ -57,11 +70,7 @@ export const feedbackApi = baseApi.injectEndpoints({
             }),
         }),
 
-        // GET /api/UserFeedback?UserFeedbackId=x
-        getFeedbackDetail: builder.query<
-            FeedbackDetailResponse,
-            number
-        >({
+        getFeedbackDetail: builder.query<FeedbackDetailResponse, number>({
             query: (feedbackId) => ({
                 url: API_URLS.feedback.get,
                 method: "GET",
@@ -69,15 +78,18 @@ export const feedbackApi = baseApi.injectEndpoints({
             }),
         }),
 
-        // POST /api/UserFeedback/Add
-        addFeedback: builder.mutation<
-            AddFeedbackResponse,
-            AddFeedbackRequest
-        >({
+        addFeedback: builder.mutation<AddFeedbackResponse, any>({
             query: (body) => ({
                 url: API_URLS.feedback.add,
                 method: "POST",
-                body,
+                body
+            }),
+        }),
+
+        getReviews: builder.query<ReviewListResponse, void>({
+            query: () => ({
+                url: API_URLS.feedback.reviews,
+                method: "GET",
             }),
         }),
     }),
@@ -87,4 +99,5 @@ export const {
     useGetFeedbackListQuery,
     useGetFeedbackDetailQuery,
     useAddFeedbackMutation,
+    useGetReviewsQuery,
 } = feedbackApi;

@@ -10,6 +10,7 @@
         public string BrowserInfo { get; set; } = string.Empty;
         public string AppVersion { get; set; } = string.Empty;
         public string Status { get; set; } = "Pending";
+        public int Rating { get; set; }
         public DateTime CreatedOn { get; set; }
     }
 
@@ -18,6 +19,7 @@
         public long UserFeedbackId { get; set; }
         public string FeedbackType { get; set; } = string.Empty;
         public string Status { get; set; } = "Pending";
+        public int Rating { get; set; }
         public DateTime CreatedOn { get; set; }
     }
 }

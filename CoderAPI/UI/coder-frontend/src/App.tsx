@@ -15,6 +15,7 @@ import FeedbackListPage from './Feedback/pages/FeedbackListPage';
 import FeedbackAddPage from './Feedback/pages/FeedbackAddPage';
 import FeedbackDetailPage from './Feedback/pages/FeedbackDetailPage';
 import Navbar from './common/Navbar';
+import ContactUsPage from './common/ContactUsPage';
 import OnboardingPage from "./UserOnboard/pages/OnboardingPage"
 
 export default function App() {
@@ -37,7 +38,7 @@ export default function App() {
                 <Route path="/feedback" element={<FeedbackListPage />} />
                 <Route path="/feedback/add" element={<FeedbackAddPage />} />
                 <Route path="/feedback/:id" element={<FeedbackDetailPage />} />
-
+                <Route path="/contact-us" element={<ContactUsPage />} />
             </Routes>
         </>
     );

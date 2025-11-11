@@ -80,5 +80,6 @@ export const API_URLS = {
         list: "/api/UserFeedback/List",
         get: "/api/UserFeedback",
         add: "/api/UserFeedback/Add",
+        reviews: "/api/UserFeedback/Reviews",
     },
 };

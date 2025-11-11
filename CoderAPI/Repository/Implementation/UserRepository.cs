@@ -111,7 +111,7 @@ namespace CoderAPI.Repository.Implementation
         {
             try
             {
-                var user = new User
+                var user = new DBOs.User
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,

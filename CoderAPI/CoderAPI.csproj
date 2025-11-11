@@ -27,19 +27,24 @@
 
   <ItemGroup>
     <Folder Include="MicroService\SignalR\" />
-    <Folder Include="UI\coder-frontend\src\auth\" />
+    <Folder Include="UI\coder-frontend\src\auth\component\" />
     <Folder Include="UI\coder-frontend\src\common\" />
     <Folder Include="UI\coder-frontend\src\community\" />
     <Folder Include="UI\coder-frontend\src\config\" />
     <Folder Include="UI\coder-frontend\src\Courses\components\" />
     <Folder Include="UI\coder-frontend\src\Courses\pages\" />
     <Folder Include="UI\coder-frontend\src\Courses\types\" />
+    <Folder Include="UI\coder-frontend\src\Feedback\apis\" />
     <Folder Include="UI\coder-frontend\src\Home\components\" />
     <Folder Include="UI\coder-frontend\src\Home\pages\" />
     <Folder Include="UI\coder-frontend\src\problem\components\AIChatPanel\" />
     <Folder Include="UI\coder-frontend\src\problem\components\UserSession\" />
     <Folder Include="UI\coder-frontend\src\problem\hooks\" />
     <Folder Include="UI\coder-frontend\src\problem\pages\ProblemDetailPage\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\components\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\apis\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\hooks\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\pages\" />
     <Folder Include="UI\coder-frontend\src\Utils\" />
     <Folder Include="UI\coder-frontend\src\Plan\components\" />
     <Folder Include="UI\coder-frontend\src\Plan\pages\" />

@@ -7,11 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace CoderAPI.DBOs;
 
 [Table("User")]
-[Index("FacebookId", Name = "UQ__Users__4D656465EFF09EC5", IsUnique = true)]
-[Index("PhoneNumber", Name = "UQ__Users__85FB4E38E5BD99EC", IsUnique = true)]
-[Index("GoogleId", Name = "UQ__Users__A6FBF2FB33310730", IsUnique = true)]
-[Index("Email", Name = "UQ__Users__A9D10534A490BA55", IsUnique = true)]
-[Index("UserName", Name = "UQ__Users__C9F28456EBF038C2", IsUnique = true)]
+[Index("Email", Name = "UQ_Email", IsUnique = true)]
+[Index("PhoneNumber", Name = "UQ_Phone", IsUnique = true)]
+[Index("UserName", Name = "UQ_UserName", IsUnique = true)]
 public partial class User
 {
     [Key]
@@ -60,6 +58,12 @@ public partial class User
 
     [StringLength(50)]
     public string UserName { get; set; } = null!;
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserDetail> UserDetails { get; set; } = new List<UserDetail>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserFeedback> UserFeedbacks { get; set; } = new List<UserFeedback>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserProblemSession> UserProblemSessions { get; set; } = new List<UserProblemSession>();

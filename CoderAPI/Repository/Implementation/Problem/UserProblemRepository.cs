@@ -124,7 +124,7 @@ namespace CoderAPI.Repository.Implementation.Problem
             try
             {
                 var response = await _context.UserSolutions
-                    .Where(us => us.ProblemId == ProblemId && us.UserId == userId)
+                    .Where(us => us.ProblemId == ProblemId && us.UserId == userId && us.IsSubmit)
                     .Select(us => new UserSolutionCardDto
                     {
                         UserSolutionId = us.UserSolutionId,

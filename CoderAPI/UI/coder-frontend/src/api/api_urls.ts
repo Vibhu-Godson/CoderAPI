@@ -9,6 +9,7 @@ export const API_URLS = {
     auth: {
         login: `${BASE_URL}/api/Auth/login`,
         register: `${BASE_URL}/api/Auth/register`,
+        socialLogin: ``,
     },
     problem: {
         list: `${BASE_URL}/api/Problem`,
@@ -65,5 +66,20 @@ export const API_URLS = {
         listChats: '/api/UserProblem/ListChats',
         solution: '/api/UserProblem/Solution',
         chat: '/api/UserProblem/Chat',
+    },
+    userDetails: {
+        currentRole: `${BASE_URL}/api/UserDetails/CurrentRole`,
+        experience: `${BASE_URL}/api/UserDetails/Experience`,
+        education: `${BASE_URL}/api/UserDetails/Education`,
+        project: `${BASE_URL}/api/UserDetails/Project`,
+        motivation: `${BASE_URL}/api/UserDetails/Motivation`,
+        skills: `${BASE_URL}/api/UserDetails/Skills`,
+        chat: `${BASE_URL}/api/UserDetails/Chat`
+    },
+    feedback: {
+        list: "/api/UserFeedback/List",
+        get: "/api/UserFeedback",
+        add: "/api/UserFeedback/Add",
+        reviews: "/api/UserFeedback/Reviews",
     },
 };

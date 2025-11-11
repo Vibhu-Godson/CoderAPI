@@ -41,7 +41,7 @@ namespace CoderAPI.Service.Implementation
                 var edgeCases = await _problemRepository.GetEdgeCasesByProblemId(request.ProblemId);
                 var previousChat = await _userSessionChatRepository.GetSessionChat(request.UserProblemSessionId);
                 var userSolution = request.UserSolutionId>0 ? await _userSolutionRepository.GetCodeByUserSolutionId(request.UserSolutionId): "";
-                var prompt = _promptSelector.BuildPrompt(problem, request, edgeCases, previousChat, userSolution);
+                var prompt = _promptSelector.BuildCodingProblemPrompt(problem, request, edgeCases, previousChat, userSolution);
 
                 var rawResponse = await _geminiLLM.GetGeminiResponse(prompt);
                 var response = _geminiHelper.ExtractGeminiJson(rawResponse);

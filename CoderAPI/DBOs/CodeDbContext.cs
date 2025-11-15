@@ -41,6 +41,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<QuizQuestion> QuizQuestions { get; set; }
 
+    public virtual DbSet<SettingDefinition> SettingDefinitions { get; set; }
+
     public virtual DbSet<Tag> Tags { get; set; }
 
     public virtual DbSet<TestCase> TestCases { get; set; }
@@ -64,6 +66,8 @@ public partial class CodeDbContext : DbContext
     public virtual DbSet<UserProblemSession> UserProblemSessions { get; set; }
 
     public virtual DbSet<UserSessionChat> UserSessionChats { get; set; }
+
+    public virtual DbSet<UserSetting> UserSettings { get; set; }
 
     public virtual DbSet<UserSolution> UserSolutions { get; set; }
 
@@ -215,6 +219,14 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Asset).WithMany(p => p.QuizQuestions).HasConstraintName("FK__QuizQuest__Asset__3587F3E0");
         });
 
+        modelBuilder.Entity<SettingDefinition>(entity =>
+        {
+            entity.HasKey(e => e.SettingId).HasName("PK__SettingD__54372B1DCB1ED7AF");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
         modelBuilder.Entity<Tag>(entity =>
         {
             entity.HasKey(e => e.TagId).HasName("PK__Tag__657CF9ACFD7D3E64");
@@ -344,6 +356,18 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.UserProblemSession).WithMany(p => p.UserSessionChats)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserSessi__UserP__534D60F1");
+        });
+
+        modelBuilder.Entity<UserSetting>(entity =>
+        {
+            entity.HasKey(e => e.UserSettingId).HasName("PK__UserSett__C40DB7FF163FDF55");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Setting).WithMany(p => p.UserSettings)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserSetti__Updat__0880433F");
         });
 
         modelBuilder.Entity<UserSolution>(entity =>

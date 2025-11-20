@@ -1,7 +1,22 @@
-import { useEffect, useState, useMemo } from "react";
-import { useRegisterMutation } from "./authApi";
+﻿// RegisterPage.tsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+    useRegisterMutation,
+    useCheckUserNameMutation,
+    useGenerateOtpMutation,
+    useValidateOtpMutation,
+} from "./authApi";
 import { useNavigate, Link } from "react-router-dom";
 import { Toast } from "./component/Toast";
+
+/**
+ Design-system hints applied:
+ - Inter font (declared inline fallback)
+ - Colors: indigo-600 (#4F46E5) as hero, saffron-ish #FF8A3D used as accent where subtle
+ - Gradient: bg-gradient-to-br from-amber-50 via-white to-indigo-50
+ - Card rounded-3xl, shadow per spec
+ - Inputs glow on focus, buttons hover lift, eye icon rotates 90deg
+*/
 
 const COUNTRIES = [
     "India",
@@ -17,11 +32,12 @@ const COUNTRIES = [
 
 const EyeIcon = ({ open }: { open: boolean }) => (
     <svg
-        className="h-5 w-5 text-slate-500"
+        className={`h-5 w-5 text-slate-500 transform transition-transform duration-200 ${open ? "rotate-90" : "rotate-0"}`}
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         viewBox="0 0 24 24"
+        aria-hidden
     >
         {open ? (
             <>
@@ -38,9 +54,97 @@ const EyeIcon = ({ open }: { open: boolean }) => (
     </svg>
 );
 
+/* Reusable OTP input component: 6 boxes */
+function OtpInputs({
+    idPrefix,
+    value,
+    setValue,
+    onComplete,
+    disabled,
+}: {
+    idPrefix: string;
+    value: string[]; // length 6
+    setValue: (v: string[]) => void;
+    onComplete?: (otp: string) => void;
+    disabled?: boolean;
+}) {
+    const refs = useRef<HTMLInputElement[]>([]);
+
+    useEffect(() => {
+        if (value.every((d) => d.length === 1)) {
+            onComplete?.(value.join(""));
+        }
+    }, [value, onComplete]);
+
+    const handleChange = (ch: string, idx: number) => {
+        if (!/^\d?$/.test(ch)) return;
+        const next = [...value];
+        next[idx] = ch;
+        setValue(next);
+
+        if (ch && idx < 5) refs.current[idx + 1]?.focus();
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
+        const k = e.key;
+        if (k === "Backspace") {
+            if (value[idx]) {
+                const next = [...value];
+                next[idx] = "";
+                setValue(next);
+            } else if (idx > 0) {
+                refs.current[idx - 1]?.focus();
+                const next = [...value];
+                next[idx - 1] = "";
+                setValue(next);
+            }
+        } else if (k === "ArrowLeft" && idx > 0) {
+            refs.current[idx - 1]?.focus();
+        } else if (k === "ArrowRight" && idx < 5) {
+            refs.current[idx + 1]?.focus();
+        }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        const text = e.clipboardData.getData("text").trim();
+        if (/^\d{6}$/.test(text)) {
+            const arr = text.split("");
+            setValue(arr);
+            refs.current[5]?.focus();
+            onComplete?.(text);
+        }
+    };
+
+    return (
+        <div className="flex gap-2 mt-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+                <input
+                    key={i}
+                    id={`${idPrefix}-otp-${i}`}
+                    ref={(el) => {
+                        if (el) refs.current[i] = el;
+                    }}
+                    value={value[i] || ""}
+                    onChange={(e) => handleChange(e.target.value.replace(/\D/g, ""), i)}
+                    onKeyDown={(e) => handleKeyDown(e, i)}
+                    onPaste={handlePaste}
+                    inputMode="numeric"
+                    maxLength={1}
+                    disabled={disabled}
+                    className="w-11 h-11 text-center text-lg rounded-xl border border-slate-300 focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.12)] outline-none transition-shadow duration-150"
+                />
+            ))}
+        </div>
+    );
+}
+
 export default function RegisterPage() {
     const navigate = useNavigate();
+
     const [registerUser, { isLoading }] = useRegisterMutation();
+    const [checkUserName] = useCheckUserNameMutation();
+    const [generateOtp] = useGenerateOtpMutation();
+    const [validateOtp] = useValidateOtpMutation();
 
     const [form, setForm] = useState({
         profileImageBase64: null as string | null,
@@ -59,39 +163,54 @@ export default function RegisterPage() {
     const [touched, setTouched] = useState<any>({});
     const [showPass1, setShowPass1] = useState(false);
     const [showPass2, setShowPass2] = useState(false);
-
     const [toast, setToast] = useState({
         open: false,
         msg: "",
         kind: "success" as "success" | "error",
     });
 
+    const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(null);
+    const usernameDebounceRef = useRef<number | null>(null);
+
+    const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+    const [phoneOtpValue, setPhoneOtpValue] = useState(["", "", "", "", "", ""]);
+    const [phoneVerified, setPhoneVerified] = useState(false);
+    const [phoneVerifying, setPhoneVerifying] = useState(false);
+
+    const [emailOtpSent, setEmailOtpSent] = useState(false);
+    const [emailOtpValue, setEmailOtpValue] = useState(["", "", "", "", "", ""]);
+    const [emailVerified, setEmailVerified] = useState(false);
+    const [emailVerifying, setEmailVerifying] = useState(false);
+
     function toBase64(file: File): Promise<string> {
         return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = () =>
-                resolve((reader.result as string).split(",")[1] ?? "");
+            reader.onload = () => resolve((reader.result as string).split(",")[1] ?? "");
             reader.readAsDataURL(file);
         });
     }
 
+    const strongPasswordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()[\]{}<>])[A-Za-z\d@$!%*?&#^()[\]{}<>]{8,}$/;
+
     const canSubmit = useMemo(() => {
         return (
-            form.firstName &&
-            form.lastName &&
-            form.userName &&
+            !!form.firstName &&
+            !!form.lastName &&
+            !!form.userName &&
             /.+@.+\..+/.test(form.email) &&
             /^(?:\+?\d{7,15})$/.test(form.phoneNumber) &&
-            form.loginPassword.length >= 6 &&
+            strongPasswordRegex.test(form.loginPassword) &&
             form.loginPassword === form.confirmPassword &&
-            form.country
+            !!form.country &&
+            phoneVerified &&
+            emailVerified
         );
-    }, [form]);
+    }, [form, phoneVerified, emailVerified]);
 
     const handleImage = async (e: any) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         const base64 = await toBase64(file);
         setPreview(URL.createObjectURL(file));
         setForm({ ...form, profileImageBase64: base64 });
@@ -100,60 +219,123 @@ export default function RegisterPage() {
     const handleChange = (e: any) => {
         setTouched({ ...touched, [e.target.name]: true });
         setForm({ ...form, [e.target.name]: e.target.value });
+
+        if (e.target.name === "userName") {
+            setUsernameAvailable(null);
+            if (usernameDebounceRef.current) {
+                window.clearTimeout(usernameDebounceRef.current);
+            }
+            usernameDebounceRef.current = window.setTimeout(async () => {
+                const v = e.target.value?.trim();
+                if (!v || v.length < 3) {
+                    setUsernameAvailable(null);
+                    return;
+                }
+                try {
+                    const res: any = await checkUserName({ value: v }).unwrap();
+                    setUsernameAvailable(!!res.status);
+                } catch {
+                    setUsernameAvailable(false);
+                }
+            }, 450);
+        }
     };
 
     useEffect(() => {
         const e: any = {};
-
-        if (touched.userName && form.userName.length < 3)
-            e.userName = "Username too short";
-
-        if (touched.email && !/.+@.+\..+/.test(form.email))
-            e.email = "Invalid email";
-
+        if (touched.userName && form.userName.length < 3) e.userName = "Username too short";
+        if (touched.email && !/.+@.+\..+/.test(form.email)) e.email = "Invalid email";
         if (touched.phoneNumber && !/^(?:\+?\d{7,15})$/.test(form.phoneNumber))
             e.phoneNumber = "Invalid phone number";
-
+        if (touched.loginPassword && !strongPasswordRegex.test(form.loginPassword)) {
+            e.loginPassword = "Password must be strong (8 chars, upper, lower, number, symbol)";
+        }
         if (
             touched.confirmPassword &&
             form.confirmPassword &&
             form.loginPassword !== form.confirmPassword
         )
             e.confirmPassword = "Passwords do not match";
-
         setErrors(e);
     }, [form, touched]);
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
-
-        if (!canSubmit) {
-            setToast({
-                open: true,
-                msg: "Fix errors before submitting",
-                kind: "error",
-            });
+    const handleSendOtp = async (target: "phone" | "email") => {
+        const value = target === "phone" ? form.phoneNumber : form.email;
+        if (!value) {
+            setToast({ open: true, msg: `Enter ${target === "phone" ? "phone" : "email"}`, kind: "error" });
             return;
         }
 
-        const { confirmPassword, ...payload } = form;
+        if (target === "email" && !phoneVerified) {
+            setToast({ open: true, msg: "Verify phone first", kind: "error" });
+            return;
+        }
 
         try {
-            const result = await registerUser(payload).unwrap();
-
-            if (result.status) {
-                setToast({
-                    open: true,
-                    msg: "Account created successfully!",
-                    kind: "success",
-                });
-                setTimeout(() => navigate("/onboarding"), 500);
+            const res: any = await generateOtp({ value }).unwrap();
+            if (res.status) {
+                setToast({ open: true, msg: `OTP sent to ${target}`, kind: "success" });
+                if (target === "phone") {
+                    setPhoneOtpSent(true);
+                    setPhoneOtpValue(["", "", "", "", "", ""]);
+                } else {
+                    setEmailOtpSent(true);
+                    setEmailOtpValue(["", "", "", "", "", ""]);
+                }
             } else {
-                setToast({
-                    open: true,
-                    msg: result.message || "Registration failed",
-                    kind: "error",
-                });
+                setToast({ open: true, msg: res.message || "Could not send OTP", kind: "error" });
+            }
+        } catch {
+            setToast({ open: true, msg: "Could not send OTP", kind: "error" });
+        }
+    };
+
+    const handleValidateOtp = async (target: "phone" | "email", otp: string) => {
+        if (!otp || otp.length !== 6) {
+            setToast({ open: true, msg: "Enter 6 digit OTP", kind: "error" });
+            return;
+        }
+        try {
+            if (target === "phone") setPhoneVerifying(true);
+            else setEmailVerifying(true);
+
+            const payload = { otp, phone: target === "phone" ? form.phoneNumber : form.email };
+            const res: any = await validateOtp(payload).unwrap();
+
+            if (res.status) {
+                setToast({ open: true, msg: `${target} verified`, kind: "success" });
+                if (target === "phone") {
+                    setPhoneVerified(true);
+                    setPhoneOtpSent(false);
+                } else {
+                    setEmailVerified(true);
+                    setEmailOtpSent(false);
+                }
+            } else {
+                setToast({ open: true, msg: res.message || "Invalid OTP", kind: "error" });
+            }
+        } catch {
+            setToast({ open: true, msg: "OTP validation failed", kind: "error" });
+        } finally {
+            if (target === "phone") setPhoneVerifying(false);
+            else setEmailVerifying(false);
+        }
+    };
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+        if (!canSubmit) {
+            setToast({ open: true, msg: "Fix errors & verify OTPs before submitting", kind: "error" });
+            return;
+        }
+        const { confirmPassword, ...payload } = form;
+        try {
+            const result = await registerUser(payload).unwrap();
+            if (result.status) {
+                setToast({ open: true, msg: "Account created successfully!", kind: "success" });
+                setTimeout(() => navigate("/login"), 500);
+            } else {
+                setToast({ open: true, msg: result.message || "Registration failed", kind: "error" });
             }
         } catch {
             setToast({ open: true, msg: "Registration failed", kind: "error" });
@@ -161,122 +343,175 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-slate-50 px-4">
-            <div className="w-full max-w-3xl bg-white shadow-xl border rounded-2xl p-6">
-
-                <h2 className="text-center text-2xl font-semibold text-slate-800">
+        <div
+            style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial' }}
+            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-indigo-50 px-4"
+        >
+            <div
+                className="w-full max-w-3xl bg-white rounded-3xl p-6"
+                style={{ boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
+            >
+                <h2 className="text-3xl tracking-tight text-center font-semibold text-[#0F172A]">
                     Create your account
                 </h2>
 
                 {/* PROFILE IMAGE BLOCK */}
                 <div className="mt-6 flex flex-col items-center">
-                    <div className="w-32 h-32 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center border shadow">
+                    <div className="w-32 h-32 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border shadow-sm">
                         {preview ? (
-                            <img src={preview} className="w-full h-full object-cover" />
+                            <img src={preview} className="w-full h-full object-cover" alt="profile preview" />
                         ) : (
                             <span className="text-xs text-slate-500">No Image</span>
                         )}
                     </div>
 
-                    <label className="cursor-pointer mt-3 px-3 py-1 text-sm bg-slate-100 border rounded-xl hover:bg-slate-200">
+                    <label className="cursor-pointer mt-3 px-3 py-1 text-sm bg-white border rounded-xl hover:bg-slate-50 shadow-sm">
                         Upload
-                        <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleImage}
-                        />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImage} />
                     </label>
                 </div>
 
                 {/* FORM */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
+                <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* First Name */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            First Name
-                        </label>
+                        <label className="text-sm font-medium text-[#334155]">First Name</label>
                         <input
                             name="firstName"
                             value={form.firstName}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150"
                         />
                     </div>
 
                     {/* Last Name */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            Last Name
-                        </label>
+                        <label className="text-sm font-medium text-[#334155]">Last Name</label>
                         <input
                             name="lastName"
                             value={form.lastName}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150"
                         />
                     </div>
 
                     {/* Username */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            Username
-                        </label>
+                        <label className="text-sm font-medium text-[#334155]">Username</label>
                         <input
                             name="userName"
                             value={form.userName}
                             onChange={handleChange}
-                            className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.userName ? "border-red-500" : "border-slate-300"
-                                }`}
+                            className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.userName ? "border-red-500" : "border-slate-300"} focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150`}
                         />
-                        {errors.userName && (
-                            <p className="text-xs text-red-500">{errors.userName}</p>
+                        {errors.userName && <p className="text-xs text-red-500">{errors.userName}</p>}
+
+                        {form.userName.length >= 3 && usernameAvailable === true && (
+                            <p className="text-xs text-green-600 mt-1">Username is available ✓</p>
+                        )}
+                        {form.userName.length >= 3 && usernameAvailable === false && (
+                            <p className="text-xs text-red-600 mt-1">Username already taken ✗</p>
                         )}
                     </div>
 
                     {/* Email */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            Email
-                        </label>
-                        <input
-                            name="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.email ? "border-red-500" : "border-slate-300"
-                                }`}
-                        />
-                        {errors.email && (
-                            <p className="text-xs text-red-500">{errors.email}</p>
+                        <label className="text-sm font-medium text-[#334155]">Email</label>
+                        <div className="flex gap-2">
+                            <input
+                                name="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.email ? "border-red-500" : "border-slate-300"} focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleSendOtp("email")}
+                                disabled={!form.email || errors.email}
+                                className={`mt-1 px-3 py-2 rounded-xl shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 ${phoneVerified ? "bg-[#4F46E5] text-white" : "bg-slate-100 text-slate-600"}`}
+                                title={phoneVerified ? "Send OTP to email" : "Verify phone first"}
+                            >
+                                Send OTP
+                            </button>
+                        </div>
+                        {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+
+                        {emailVerified ? (
+                            <p className="text-xs text-green-600 mt-1">Email verified ✓</p>
+                        ) : (
+                            emailOtpSent && (
+                                <div>
+                                    <OtpInputs
+                                        idPrefix="email"
+                                        value={emailOtpValue}
+                                        setValue={setEmailOtpValue}
+                                        onComplete={(otp) => handleValidateOtp("email", otp)}
+                                    />
+                                    <div className="flex gap-2 mt-2 items-center">
+                                        <button
+                                            type="button"
+                                            className="text-sm text-[#4F46E5] underline"
+                                            onClick={() => handleSendOtp("email")}
+                                        >
+                                            Resend
+                                        </button>
+                                        {emailVerifying && <p className="text-xs text-slate-500">Verifying...</p>}
+                                    </div>
+                                </div>
+                            )
                         )}
                     </div>
 
-                    {/* Phone Number */}
+                    {/* WhatsApp Number */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            Phone Number
-                        </label>
-                        <input
-                            name="phoneNumber"
-                            value={form.phoneNumber}
-                            onChange={handleChange}
-                            className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.phoneNumber ? "border-red-500" : "border-slate-300"
-                                }`}
-                        />
-                        {errors.phoneNumber && (
-                            <p className="text-xs text-red-500">{errors.phoneNumber}</p>
+                        <label className="text-sm font-medium text-[#334155]">WhatsApp Number</label>
+                        <div className="flex gap-2">
+                            <input
+                                name="phoneNumber"
+                                value={form.phoneNumber}
+                                onChange={handleChange}
+                                className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.phoneNumber ? "border-red-500" : "border-slate-300"} focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleSendOtp("phone")}
+                                className="mt-1 px-3 py-2 rounded-xl bg-[#4F46E5] text-white shadow-md hover:shadow-lg transition-shadow"
+                            >
+                                Send OTP
+                            </button>
+                        </div>
+                        {errors.phoneNumber && <p className="text-xs text-red-500">{errors.phoneNumber}</p>}
+
+                        {phoneVerified ? (
+                            <p className="text-xs text-green-600 mt-1">WhatsApp verified ✓</p>
+                        ) : (
+                            phoneOtpSent && (
+                                <div>
+                                    <OtpInputs
+                                        idPrefix="phone"
+                                        value={phoneOtpValue}
+                                        setValue={setPhoneOtpValue}
+                                        onComplete={(otp) => handleValidateOtp("phone", otp)}
+                                    />
+                                    <div className="flex gap-2 mt-2 items-center">
+                                        <button
+                                            type="button"
+                                            className="text-sm text-[#4F46E5] underline"
+                                            onClick={() => handleSendOtp("phone")}
+                                        >
+                                            Resend
+                                        </button>
+                                        {phoneVerifying && <p className="text-xs text-slate-500">Verifying...</p>}
+                                    </div>
+                                </div>
+                            )
                         )}
                     </div>
 
                     {/* Password */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            Password
-                        </label>
-                        <div className="mt-1 flex items-center border border-slate-300 rounded-xl px-3 py-2">
+                        <label className="text-sm font-medium text-[#334155]">Password</label>
+                        <div className="mt-1 flex items-center border border-slate-300 rounded-xl px-3 py-2 focus-within:shadow-[0_6px_18px_rgba(79,70,229,0.08)] transition-shadow duration-150">
                             <input
                                 name="loginPassword"
                                 type={showPass1 ? "text" : "password"}
@@ -284,19 +519,22 @@ export default function RegisterPage() {
                                 onChange={handleChange}
                                 className="w-full outline-none"
                             />
-                            <button type="button" onClick={() => setShowPass1(!showPass1)}>
+                            <button
+                                type="button"
+                                onClick={() => setShowPass1((s) => !s)}
+                                className="p-1 rounded hover:bg-slate-100 transition-colors"
+                                aria-label="toggle password visibility"
+                            >
                                 <EyeIcon open={showPass1} />
                             </button>
                         </div>
+                        {errors.loginPassword && <p className="text-xs text-red-500">{errors.loginPassword}</p>}
                     </div>
 
                     {/* Confirm Password */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">
-                            Confirm Password
-                        </label>
-
-                        <div className="mt-1 flex items-center border border-slate-300 rounded-xl px-3 py-2">
+                        <label className="text-sm font-medium text-[#334155]">Confirm Password</label>
+                        <div className="mt-1 flex items-center border border-slate-300 rounded-xl px-3 py-2 focus-within:shadow-[0_6px_18px_rgba(79,70,229,0.08)] transition-shadow duration-150">
                             <input
                                 name="confirmPassword"
                                 type={showPass2 ? "text" : "password"}
@@ -304,28 +542,32 @@ export default function RegisterPage() {
                                 onChange={handleChange}
                                 className="w-full outline-none"
                             />
-                            <button type="button" onClick={() => setShowPass2(!showPass2)}>
+                            <button
+                                type="button"
+                                onClick={() => setShowPass2((s) => !s)}
+                                className="p-1 rounded hover:bg-slate-100 transition-colors"
+                                aria-label="toggle confirm password visibility"
+                            >
                                 <EyeIcon open={showPass2} />
                             </button>
                         </div>
-
-                        {errors.confirmPassword && (
-                            <p className="text-xs text-red-500">{errors.confirmPassword}</p>
-                        )}
+                        {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
                     </div>
 
                     {/* Country */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">Country</label>
+                        <label className="text-sm font-medium text-[#334155]">Country</label>
                         <select
                             name="country"
                             value={form.country}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150"
                         >
                             <option value="">Select country</option>
                             {COUNTRIES.map((c) => (
-                                <option key={c}>{c}</option>
+                                <option key={c} value={c}>
+                                    {c}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -335,16 +577,20 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={!canSubmit || isLoading}
-                            className="w-full bg-indigo-600 text-white py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50"
+                            className={`w-full py-2.5 rounded-xl shadow-md hover:shadow-lg transition-transform duration-150 ${!canSubmit || isLoading ? "opacity-50 transform-none bg-slate-200" : "bg-[#4F46E5] text-white hover:-translate-y-0.5"}`}
                         >
                             {isLoading ? "Creating account..." : "Create Account"}
                         </button>
+
+                        <p className="text-xs text-slate-500 mt-2">
+                            Verify WhatsApp first, then verify Email. Both must be validated to create account.
+                        </p>
                     </div>
                 </form>
 
                 <p className="text-center text-sm text-slate-600 mt-4">
                     Already have an account?{" "}
-                    <Link to="/login" className="text-indigo-600 hover:underline">
+                    <Link to="/login" className="text-[#4F46E5] hover:underline">
                         Sign in
                     </Link>
                 </p>

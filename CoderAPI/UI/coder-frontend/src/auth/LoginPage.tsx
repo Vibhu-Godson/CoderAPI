@@ -1,6 +1,6 @@
 ﻿// src/features/Auth/LoginPage.tsx
 import { useState } from "react";
-import { useLoginMutation, useSocialLoginMutation } from "./authApi";
+import { useLoginMutation, useLazyUserOnboardDoneQuery } from "./authApi";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./authSlice";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -8,7 +8,8 @@ import { Toast } from "./component/Toast";
 
 const EyeIcon = ({ open }: { open: boolean }) => (
     <svg
-        className="h-5 w-5 text-slate-500"
+        className={`h-5 w-5 text-slate-500 transform transition-transform duration-200 ${open ? "rotate-90" : "rotate-0"
+            }`}
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -29,22 +30,6 @@ const EyeIcon = ({ open }: { open: boolean }) => (
     </svg>
 );
 
-const GoogleIcon = () => (
-    <img
-        src="https://www.svgrepo.com/show/475656/google-color.svg"
-        alt="google"
-        className="w-5 h-5"
-    />
-);
-
-const FacebookIcon = () => (
-    <img
-        src="https://www.svgrepo.com/show/475647/facebook-color.svg"
-        alt="fb"
-        className="w-5 h-5"
-    />
-);
-
 export default function LoginPage() {
     const [userName, setUserName] = useState("");
     const [password, setPassword] = useState("");
@@ -57,7 +42,7 @@ export default function LoginPage() {
     });
 
     const [login, { isLoading }] = useLoginMutation();
-    const [socialLogin] = useSocialLoginMutation();
+    const [triggerOnboardCheck] = useLazyUserOnboardDoneQuery();
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -66,8 +51,10 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+
         try {
             const result = await login({ userName, password }).unwrap();
+
             if (result.status) {
                 dispatch(
                     setCredentials({
@@ -76,8 +63,39 @@ export default function LoginPage() {
                         profileImageBase64: result.profileImageBase64,
                     })
                 );
-                setToast({ open: true, msg: `Welcome ${result.userName}!`, kind: "success" });
-                setTimeout(() => navigate(from, { replace: true }), 300);
+
+                setToast({
+                    open: true,
+                    msg: `Welcome ${result.userName}!`,
+                    kind: "success",
+                });
+
+                // small delay for UX; then trigger onboarding check via RTK Query lazy trigger
+                setTimeout(async () => {
+                    try {
+                        // trigger expects an argument; pass undefined
+                        const onboardResAny = await triggerOnboardCheck(undefined);
+                        // trigger returns an object; if using unwrap pattern, you can do:
+                        // const onboardResAny = await triggerOnboardCheck(undefined).unwrap();
+                        // but to be robust across RTK versions, check .data or the object directly:
+
+                        // possible shapes:
+                        // - if trigger returned plain data: onboardResAny === { status: boolean, message: string }
+                        // - if RTK returns { data: ... } use onboardResAny.data
+                        const onboardData =
+                            (onboardResAny && (onboardResAny as any).data) ||
+                            (onboardResAny as any);
+
+                        if (onboardData?.status === true) {
+                            navigate("/", { replace: true });
+                        } else {
+                            navigate("/onboarding", { replace: true });
+                        }
+                    } catch (err) {
+                        // fallback to onboarding on any failure
+                        navigate("/", { replace: true });
+                    }
+                }, 300);
             } else {
                 setToast({
                     open: true,
@@ -91,31 +109,38 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white px-4">
-            <div className="w-full max-w-md bg-white shadow-xl rounded-2xl border border-slate-200 p-6">
-                <h2 className="text-center text-2xl font-semibold text-slate-900">
-                    Hey Coder, Welcome back!
+        <div
+            style={{
+                fontFamily:
+                    'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+            }}
+            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-indigo-50 px-4"
+        >
+            <div
+                className="w-full max-w-md bg-white rounded-3xl p-8"
+                style={{ boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
+            >
+                <h2 className="text-3xl tracking-tight text-center font-semibold text-[#0F172A]">
+                    Welcome back 👋
                 </h2>
                 <p className="text-center text-sm text-slate-500">
-                    Sign in on AmCoder to continue
+                    Sign in to continue your coding journey
                 </p>
 
-                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                    {/* Username */}
+                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                     <div>
-                        <label className="text-sm font-medium text-slate-700">Username</label>
+                        <label className="text-sm font-medium text-[#334155]">Username</label>
                         <input
-                            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.10)] transition-shadow duration-150"
                             placeholder="your_username"
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
                         />
                     </div>
 
-                    {/* Password */}
                     <div>
-                        <label className="text-sm font-medium text-slate-700">Password</label>
-                        <div className="mt-1 flex items-center rounded-xl border border-slate-300 px-3 py-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                        <label className="text-sm font-medium text-[#334155]">Password</label>
+                        <div className="mt-1 flex items-center rounded-xl border border-slate-300 px-3 py-2 focus-within:border-indigo-600 focus-within:shadow-[0_6px_18px_rgba(79,70,229,0.10)] transition-shadow duration-150">
                             <input
                                 type={showPass ? "text" : "password"}
                                 className="w-full outline-none"
@@ -123,7 +148,7 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            <button type="button" onClick={() => setShowPass(!showPass)}>
+                            <button type="button" onClick={() => setShowPass(!showPass)} className="p-1 rounded hover:bg-slate-100 transition-colors">
                                 <EyeIcon open={showPass} />
                             </button>
                         </div>
@@ -132,7 +157,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+                        className={`w-full py-2.5 bg-[#4F46E5] text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-transform duration-150 ${isLoading ? "opacity-50" : "hover:-translate-y-0.5"}`}
                     >
                         {isLoading ? "Signing in..." : "Sign in"}
                     </button>
@@ -144,31 +169,15 @@ export default function LoginPage() {
                     <div className="h-px bg-slate-200 flex-1" />
                 </div>
 
-                {/* Social Login */}
-                <div className="grid grid-cols-2 gap-3">
-                    <button className="flex items-center justify-center gap-2 border border-slate-300 py-2 rounded-xl hover:bg-slate-50">
-                        <GoogleIcon /> Google
-                    </button>
-
-                    <button className="flex items-center justify-center gap-2 border border-slate-300 py-2 rounded-xl hover:bg-slate-50">
-                        <FacebookIcon /> Facebook
-                    </button>
-                </div>
-
                 <p className="text-center text-sm text-slate-600 mt-6">
                     New user?{" "}
-                    <Link to="/register" className="text-indigo-600 hover:underline">
+                    <Link to="/register" className="text-[#4F46E5] hover:underline">
                         Create an account
                     </Link>
                 </p>
             </div>
 
-            <Toast
-                open={toast.open}
-                title={toast.msg}
-                kind={toast.kind}
-                onClose={() => setToast((t) => ({ ...t, open: false }))}
-            />
+            <Toast open={toast.open} title={toast.msg} kind={toast.kind} onClose={() => setToast((t) => ({ ...t, open: false }))} />
         </div>
     );
 }

@@ -29,7 +29,7 @@ export default function LeftPanel({
                     <TabButton active={activeTab === "solutions"} onClick={() => setActiveTab("solutions")}>My Solutions</TabButton>
                     <TabButton active={activeTab === "sessions"} onClick={() => setActiveTab("sessions")}>My Sessions</TabButton>
                 </div>
-                <button className="text-xs text-blue-600 hover:underline" onClick={() => setLeftCollapsed(true)}>Collapse</button>
+                {/*<button className="text-xs text-blue-600 hover:underline" onClick={() => setLeftCollapsed(true)}>Collapse</button>*/}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">

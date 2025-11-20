@@ -56,12 +56,7 @@ namespace CoderAPI.Service.Implementation.Problem
             try
             {
                 var response = await _problemRepository.GetProblems(query, pageNumber, pageSize, userId);
-                return new ListPageDto<ProblemCard>
-                {
-                    Items = response,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                };
+                return response;
             }
             catch (Exception ex)
             {

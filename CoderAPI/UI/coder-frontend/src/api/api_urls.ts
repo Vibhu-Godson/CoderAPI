@@ -9,7 +9,12 @@ export const API_URLS = {
     auth: {
         login: `${BASE_URL}/api/Auth/login`,
         register: `${BASE_URL}/api/Auth/register`,
-        socialLogin: ``,
+        checkUserName: `${BASE_URL}/api/Auth/checkUserName`,
+        generateOtp: `${BASE_URL}/api/Auth/generateOtp`,
+        validateOtp: `${BASE_URL}/api/Auth/validateOtp`,
+    },
+    postlogin: {
+        isOnboarded: `${BASE_URL}/api/UserOnboard/done`,
     },
     problem: {
         list: `${BASE_URL}/api/Problem`,
@@ -60,6 +65,10 @@ export const API_URLS = {
     problemDetail: {
         getLanguages: `${BASE_URL}/api/ProblemDetail/Languages`,
         getStarterCode: `${BASE_URL}/api/ProblemDetail/StarterCode`,
+    },
+    problemTag: {
+        allTags: "/api/ProblemTag/AllTags",
+        problemsByTag: "/api/ProblemTag/ProblemsByTag",
     },
     userProblem: {
         listSolutions: '/api/UserProblem/ListSolutions',

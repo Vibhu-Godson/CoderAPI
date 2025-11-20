@@ -1,4 +1,4 @@
-﻿import { useParams } from "react-router-dom";
+﻿import { Navigate, useNavigation, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
 import LeftPanel from "./ProblemDetailPage/LeftPanel";
@@ -6,7 +6,8 @@ import MiddlePanel from "./ProblemDetailPage/MiddlePanel";
 import RightPanel from "./ProblemDetailPage/RightPanel";
 import { useProblemData } from "../hooks/useProblemData";
 import { useProblemSession } from "../hooks/useProblemSession";
-import SuccessNotification from "../components/SuccessNotification"; // ✅ add this
+import SuccessNotification from "../components/SuccessNotification"; 
+import { useNavigate } from "react-router-dom";
 
 type DecodedToken = {
     subscription?: string;
@@ -14,8 +15,10 @@ type DecodedToken = {
 };
 
 export default function ProblemDetailPage() {
-    const { id } = useParams<{ id: string }>();
-    const problemId = Number(id);
+    const { idSlug } = useParams<{ idSlug: string }>();
+
+    const problemId = Number(idSlug?.split("-")[0]);
+    const navigate = useNavigate();
 
     const token = localStorage.getItem("authToken");
     let isPremiumUser = false;
@@ -82,55 +85,60 @@ export default function ProblemDetailPage() {
                 <p className="max-w-md text-center text-zinc-500 dark:text-zinc-400">
                     This problem is available only to premium members.
                 </p>
-                <button className="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                <button className="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700" onClick={() => navigate("/plans") }>
                     Upgrade to Premium
                 </button>
             </div>
         );
 
     return (
-        <div className="fixed inset-0 flex flex-col bg-zinc-50 p-3 dark:bg-zinc-900">
-            <div className="flex flex-col gap-3 md:grid md:grid-cols-[28%_1fr_32%] min-h-0 flex-1 overflow-hidden">
-                <LeftPanel
-                    activeTab={activeLeftTab}
-                    setActiveTab={setActiveLeftTab}
-                    problem={problem}
-                    leftCollapsed={leftCollapsed}
-                    setLeftCollapsed={setLeftCollapsed}
-                />
+        <div className="fixed inset-0 mt-16 bg-zinc-50 flex flex-col">
+            <div className="grid grid-cols-12 min-h-0 flex-1 overflow-hidden border border-slate-200 bg-white">
+                <div className="col-span-3 border-r border-slate-200 overflow-hidden">
+                    <LeftPanel
+                        activeTab={activeLeftTab}
+                        setActiveTab={setActiveLeftTab}
+                        problem={problem}
+                        leftCollapsed={leftCollapsed}
+                        setLeftCollapsed={setLeftCollapsed}
+                    />
+                </div>
+                <div className="col-span-5 border-r border-slate-200 overflow-hidden">
+                    <MiddlePanel
+                        code={code}
+                        setCode={setCode}
+                        wrappedRun={wrappedRun}
+                        wrappedSubmit={wrappedSubmit}
+                        editorLocked={editorLocked}
+                        setEditorLocked={setEditorLocked}
+                        language={language}
+                        setLanguage={setLanguage}
+                        languagesData={languagesData}
+                        signalRConnected={signalRConnected}
+                        sessionId={sessionId}
+                        problemId={problemId}
+                        setSelectedProblemDetailId={setSelectedProblemDetailId}
+                        setTlEditorRef={setTlEditorRef}  // ✅ pass down
+                    />
+                </div>
 
-                <MiddlePanel
-                    code={code}
-                    setCode={setCode}
-                    wrappedRun={wrappedRun}
-                    wrappedSubmit={wrappedSubmit}
-                    editorLocked={editorLocked}
-                    setEditorLocked={setEditorLocked}
-                    language={language}
-                    setLanguage={setLanguage}
-                    languagesData={languagesData}
-                    signalRConnected={signalRConnected}
-                    sessionId={sessionId}
-                    problemId={problemId}
-                    setSelectedProblemDetailId={setSelectedProblemDetailId}
-                    setTlEditorRef={setTlEditorRef}  // ✅ pass down
-                />
-
-                <RightPanel
-                    rightCollapsed={rightCollapsed}
-                    setRightCollapsed={setRightCollapsed}
-                    chat={chat}
-                    userInput={userInput}
-                    setUserInput={setUserInput}
-                    handleSend={handleSend}
-                    includeCode={includeCode}
-                    setIncludeCode={setIncludeCode}
-                    includeBoard={includeBoard}
-                    setIncludeBoard={setIncludeBoard}
-                    isThinking={isThinking}  // ✅ pass down
-                    code={code}              // ✅ pass down
-                    tlEditorRef={tlEditorRef} // ✅ pass down
-                />
+                <div className="col-span-4 overflow-hidden">
+                    <RightPanel
+                        rightCollapsed={rightCollapsed}
+                        setRightCollapsed={setRightCollapsed}
+                        chat={chat}
+                        userInput={userInput}
+                        setUserInput={setUserInput}
+                        handleSend={handleSend}
+                        includeCode={includeCode}
+                        setIncludeCode={setIncludeCode}
+                        includeBoard={includeBoard}
+                        setIncludeBoard={setIncludeBoard}
+                        isThinking={isThinking}  // ✅ pass down
+                        code={code}              // ✅ pass down
+                        tlEditorRef={tlEditorRef} // ✅ pass down
+                    />
+                </div>
 
             </div>
 

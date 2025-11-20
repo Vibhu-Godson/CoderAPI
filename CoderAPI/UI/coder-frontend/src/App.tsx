@@ -1,9 +1,13 @@
 import React from 'react';
-import PlansPage from './Plan/pages/PlansPage';
-import HomePage from './Home/pages/HomePage';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './common/Navbar';
+
 import LoginPage from './auth/LoginPage';
 import RegisterPage from './auth/RegisterPage';
+import RequireAuth from "./auth/RequireAuth";
+
+import HomePage from './Home/pages/HomePage';
+import PlansPage from './Plan/pages/PlansPage';
 import ProblemsPage from './problem/pages/ProblemsPage';
 import ProblemDetailPage from './problem/pages/ProblemDetailPage';
 import { CoursesPage } from './Courses/pages/CoursesPage';
@@ -11,34 +15,41 @@ import { CourseDetailsPage } from './Courses/pages/CourseDetailsPage';
 import { BundleDetailsPage } from './Courses/pages/BundleDetailsPage';
 import { CategoryCoursesPage } from './Courses/pages/CategoryCoursesPage';
 import { MyCoursePage } from './Courses/pages/MyCoursePage';
+
 import FeedbackListPage from './Feedback/pages/FeedbackListPage';
 import FeedbackAddPage from './Feedback/pages/FeedbackAddPage';
 import FeedbackDetailPage from './Feedback/pages/FeedbackDetailPage';
-import Navbar from './common/Navbar';
+
 import ContactUsPage from './common/ContactUsPage';
-import OnboardingPage from "./UserOnboard/pages/OnboardingPage"
+import OnboardingPage from "./UserOnboard/pages/OnboardingPage";
 
 export default function App() {
     return (
         <>
-            <Navbar/>
+            <Navbar />
+
             <Routes>
-                <Route path="/" element={<HomePage />} />
+                {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/problems" element={<ProblemsPage />} />
-                <Route path="/problems/:id" element={<ProblemDetailPage />} />
-                <Route path="/plans" element={<PlansPage />} />
-                <Route path="/courses" element={<CoursesPage />} />
-                <Route path="/course/:id" element={<CourseDetailsPage />} />
-                <Route path="/bundle/:id" element={<BundleDetailsPage />} />
-                <Route path="/category/:id" element={<CategoryCoursesPage />} />
-                <Route path="/myCourses/:userCourseId" element={<MyCoursePage />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
-                <Route path="/feedback" element={<FeedbackListPage />} />
-                <Route path="/feedback/add" element={<FeedbackAddPage />} />
-                <Route path="/feedback/:id" element={<FeedbackDetailPage />} />
-                <Route path="/contact-us" element={<ContactUsPage />} />
+
+                {/* Protected routes */}
+                <Route element={<RequireAuth />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/plans" element={<PlansPage />} />
+                    <Route path="/problems" element={<ProblemsPage />} />
+                    <Route path="/problems/:idSlug" element={<ProblemDetailPage />} />
+                    <Route path="/courses" element={<CoursesPage />} />
+                    <Route path="/course/:id" element={<CourseDetailsPage />} />
+                    <Route path="/bundle/:id" element={<BundleDetailsPage />} />
+                    <Route path="/category/:id" element={<CategoryCoursesPage />} />
+                    <Route path="/myCourses/:userCourseId" element={<MyCoursePage />} />
+                    <Route path="/feedback" element={<FeedbackListPage />} />
+                    <Route path="/feedback/add" element={<FeedbackAddPage />} />
+                    <Route path="/feedback/:id" element={<FeedbackDetailPage />} />
+                    <Route path="/contact-us" element={<ContactUsPage />} />
+                </Route>
             </Routes>
         </>
     );

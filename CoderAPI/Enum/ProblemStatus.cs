@@ -7,6 +7,7 @@
         Accepted,
         WA,
         TLE,
+        Completed,
     }
 
     public enum ProblemSessionStatus

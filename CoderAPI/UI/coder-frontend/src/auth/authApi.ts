@@ -51,18 +51,50 @@ export const authApi = baseApi.injectEndpoints({
             }),
         }),
 
-        // Optional: kick off social auth on backend and receive a short-lived code or token
-        socialLogin: builder.mutation<
-            LoginResponse,
-            { provider: "google" | "facebook"; credential: string }
-        >({
-            query: ({ provider, credential }) => ({
-                url: `${API_URLS.auth.socialLogin}/${provider}`,
+        checkUserName: builder.mutation<{ status: boolean, message: string }, { value: string }>({
+            query: (body) => ({
+                url: API_URLS.auth.checkUserName,
                 method: "POST",
-                body: { credential },
+                body
             }),
         }),
+
+        generateOtp: builder.mutation<{ status: boolean, message: string, otp?: string }, { value: string }>({
+            query: (body) => ({
+                url: API_URLS.auth.generateOtp,
+                method: "POST",
+                body
+            }),
+        }),
+
+        validateOtp: builder.mutation<{ status: boolean, message: string }, { otp: string, phone: string }>({
+            query: (body) => ({
+                url: API_URLS.auth.validateOtp,
+                method: "POST",
+                body
+            }),
+        }),
+        userOnboardDone: builder.query({
+            query: () => ({
+                url: API_URLS.postlogin.isOnboarded,
+                method: "GET",
+            }),
+        }),
+        userOnboardDoneLazy: builder.query<{ status: boolean; message: string }, void>({
+            query: () => ({
+                url: API_URLS.postlogin.isOnboarded,
+                method: "GET",
+            }),
+        }),
+
     }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useSocialLoginMutation } = authApi;
+export const { useLoginMutation,
+    useRegisterMutation,
+    useCheckUserNameMutation,
+    useGenerateOtpMutation,
+    useValidateOtpMutation,
+    useUserOnboardDoneQuery,
+    useLazyUserOnboardDoneQuery,
+} = authApi;

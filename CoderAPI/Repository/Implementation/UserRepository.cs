@@ -18,6 +18,51 @@ namespace CoderAPI.Repository.Implementation
             _logger = logger;
         }
 
+        public Task<bool> CheckEmailAvailable(string email)
+        {
+            try
+            {
+                var found = _context.Users
+                    .AnyAsync(u => u.Email == email);
+                return found;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to check userName available for: {email}\n{ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+        }
+
+        public Task<bool> CheckPhoneNumberAvailable(string phone)
+        {
+            try
+            {
+                var found = _context.Users
+                    .AnyAsync(u => u.PhoneNumber == phone);
+                return found;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to check userName available for: {phone}\n{ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+        }
+
+        public Task<bool> CheckUserNameAvailable(string userName)
+        {
+            try
+            {
+                var found = _context.Users
+                    .AnyAsync(u => u.UserName == userName);
+                return found;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to check userName available for: {userName}\n{ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+        }
+
         public async Task<bool> CheckUsernameAvailablity(string username)
         {
             try

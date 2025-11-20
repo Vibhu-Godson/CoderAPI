@@ -13,6 +13,7 @@ export const problemApi = baseApi.injectEndpoints({
                     tags: string[];
                     userStatus: string;
                     isLocked: boolean; 
+                    acceptance: number;
                     difficultyLevel: string;
                 }[];
                 totalCount: number;

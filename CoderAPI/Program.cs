@@ -49,7 +49,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-
+builder.Services.AddMemoryCache();
 // MassTransit + RabbitMQ
 builder.Services.AddMassTransit(x =>
 {

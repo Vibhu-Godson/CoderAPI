@@ -86,65 +86,98 @@ namespace CoderAPI.Repository.Implementation.Problem
             }
         }
 
-        public async Task<List<ProblemCard>> GetProblems(ProblemQuery query, int pageNumber, int pageSize, long userId)
+        public async Task<ListPageDto<ProblemCard>> GetProblems(ProblemQuery query, int pageNumber, int pageSize, long userId)
         {
             try
             {
-                //var result = await (from p in _context.Problems
-                //                    join us in _context.UserSolutions
-                //                        on p.ProblemId equals us.ProblemId into usGrp
-                //                    from us in usGrp.DefaultIfEmpty()
-                //                    where (us == null || us.UserId == userId)
-                //                          && (query.Tags == null || p.ProblemTags.Any(pt => query.Tags.Contains(pt.TagId)))
-                //                          && (query.Difficulty == "All" || p.DifficultyLevel == query.Difficulty)
-                //                    select new
-                //                    {
-                //                        Problem = p,
-                //                        UserSolution = us,
-                //                        Tags = p.ProblemTags.Select(pt => pt.Tag.TagName).ToList()
-                //                    })
-                //    .GroupBy(x => x.Problem)
-                //    .Select(g => new ProblemCard
-                //    {
-                //        ProblemId = g.Key.ProblemId,
-                //        ProblemName = g.Key.ProblemName,
-                //        Tags = g.First().Tags, // safe because Tags are same for all in group
-                //        UserStatus = g.Any(x => x.UserSolution != null && x.UserSolution.Result == ProblemStatus.Accepted.ToString())
-                //            ? ProblemStatus.Accepted.ToString()
-                //            : g.Where(x => x.UserSolution != null)
-                //               .OrderByDescending(x => x.UserSolution.SubmissionDate)
-                //               .Select(x => x.UserSolution.Result)
-                //               .FirstOrDefault() ?? ProblemStatus.NotAttempted.ToString()
-                //    })
-                //    .AsNoTracking()
-                //    .Skip((pageNumber - 1) * pageSize)
-                //    .Take(pageSize)
-                //    .ToListAsync();
+                IQueryable<long> problemIdQuery = _context.Problems
+                    .Where(p => p.IsActive)
+                    .Select(p => p.ProblemId);
 
-                var result = await (from p in _context.Problems
-                                    where p.IsActive
-                                    select new ProblemCard
-                                    {
-                                        ProblemId = p.ProblemId,
-                                        ProblemName = p.ProblemName,
-                                        URL = "",
-                                        DifficultyLevel = p.DifficultyLevel,
-                                        IsLocked = p.IsLocked ?? false,
-                                        Tags = _context.ProblemTags
+
+                if(query.Tags != null && query.Tags.Count > 0)
+                {
+                    problemIdQuery = from pt in _context.ProblemTags
+                                     where query.Tags.Contains(pt.TagId)
+                                     select pt.ProblemId;
+                    problemIdQuery = problemIdQuery.Distinct();
+                }
+
+                if(!string.IsNullOrEmpty(query.Difficulty) && query.Difficulty != "All")
+                {
+                    problemIdQuery = from pid in problemIdQuery
+                                     join p in _context.Problems on pid equals p.ProblemId
+                                     where p.DifficultyLevel == query.Difficulty
+                                     select pid;
+                }
+                var filteredProblemIds = await problemIdQuery
+                            .Distinct()
+                            .ToListAsync();
+
+                var pagedIds = filteredProblemIds
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var response = await (
+                            from p in _context.Problems
+                            where pagedIds.Contains(p.ProblemId)
+                            select new ProblemCard
+                            {
+                                ProblemId = p.ProblemId,
+                                ProblemName = p.ProblemName,
+                                URL = "",
+                                DifficultyLevel = p.DifficultyLevel,
+                                IsLocked = p.IsLocked ?? false,
+
+                                Tags = _context.ProblemTags
                                             .Where(pt => pt.ProblemId == p.ProblemId)
                                             .Select(pt => pt.Tag.TagName)
                                             .ToList(),
-                                        UserStatus = _context.UserSolutions
-                                            .Where(us => us.ProblemId == p.ProblemId)
+
+                                UserStatus =
+                                    (
+                                        _context.UserProblemSessions
+                                            .Where(us => us.ProblemId == p.ProblemId && us.UserId == userId)
+                                            .Select(us => us.SessionStatus)
+                                            .FirstOrDefault()
+                                        == ProblemStatus.Completed.ToString()
+                                    )
+                                    ? ProblemStatus.Completed.ToString()
+                                    :
+                                    (
+                                        _context.UserSolutions
+                                            .Where(us => us.UserId == userId &&
+                                                         us.ProblemId == p.ProblemId &&
+                                                         us.IsSubmit)
                                             .Select(us => us.Result)
-                                            .FirstOrDefault() ?? ProblemStatus.NotAttempted.ToString()
-                                    })
-                                    .AsNoTracking()
-                                    .ToListAsync();
+                                            .FirstOrDefault()
+                                        ?? ProblemStatus.NotAttempted.ToString()
+                                    ),
+
+                                Acceptance =
+                                    !_context.UserSolutions.Any(us => us.ProblemId == p.ProblemId)
+                                        ? 0
+                                        : Math.Round(
+                                            ((decimal)_context.UserSolutions
+                                                .Count(us => us.ProblemId == p.ProblemId &&
+                                                             us.Result == ProblemStatus.Accepted.ToString())
+                                          /
+                                            (decimal)_context.UserSolutions
+                                                .Count(us => us.ProblemId == p.ProblemId))
+                                          *100,2)
+                            }
+                        ).AsNoTracking().ToListAsync();
 
 
-                return result;
-
+                return new ListPageDto<ProblemCard>
+                {
+                    Items = response,
+                    TotalCount = filteredProblemIds.Count,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(filteredProblemIds.Count / (double)pageSize)
+                };
             }
             catch (Exception ex)
             {

@@ -22,7 +22,7 @@ export default function LeftPanel({
     }
 
     return (
-        <div className="flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex min-h-0 flex-col h-full bg-white">
             <div className="mb-2 flex justify-between items-center">
                 <div className="flex gap-2">
                     <TabButton active={activeTab === "description"} onClick={() => setActiveTab("description")}>Description</TabButton>

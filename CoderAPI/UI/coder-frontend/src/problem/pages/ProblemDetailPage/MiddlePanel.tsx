@@ -48,7 +48,7 @@ export default function MiddlePanel({
     }, [tlEditorRef, setTlEditorRef]);
 
     return (
-        <div className="flex flex-col h-full rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden">
+        <div className="flex flex-col h-full bg-white">
             <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60">
                 <button
                     onClick={() => setActiveTab("code")}

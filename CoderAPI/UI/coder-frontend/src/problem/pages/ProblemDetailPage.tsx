@@ -92,8 +92,8 @@ export default function ProblemDetailPage() {
         );
 
     return (
-        <div className="fixed inset-0 mt-16 bg-zinc-50 flex flex-col">
-            <div className="grid grid-cols-12 min-h-0 flex-1 overflow-hidden border border-slate-200 bg-white">
+        <div className="h-[calc(100vh-6rem)] mt-1 bg-zinc-50 flex">
+            <div className="grid grid-cols-12 w-full gap-2 px-2">
                 <div className="col-span-3 border-r border-slate-200 overflow-hidden">
                     <LeftPanel
                         activeTab={activeLeftTab}

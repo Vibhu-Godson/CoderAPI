@@ -68,7 +68,7 @@ export default function RightPanel({
     }
 
     return (
-        <aside className="flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex flex-col h-full bg-white">
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-sm text-zinc-700 dark:text-zinc-300">
@@ -131,6 +131,6 @@ export default function RightPanel({
                 code={code}              // ✅ must be passed
                 tlEditorRef={tlEditorRef} // ✅ must be passed
             />
-        </aside>
+        </div>
     );
 }

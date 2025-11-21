@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using CoderAPI.WhatsApp.Implementation;
+using CoderAPI.WhatsApp.Interface;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +51,11 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddHttpClient<IWhatsappHelper, WhatsappHelper>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:3001/");
+});
+
 builder.Services.AddMemoryCache();
 // MassTransit + RabbitMQ
 builder.Services.AddMassTransit(x =>

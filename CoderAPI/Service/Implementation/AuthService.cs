@@ -3,6 +3,7 @@ using CoderAPI.Helper;
 using CoderAPI.Helper.Interface;
 using CoderAPI.Repository.Interface;
 using CoderAPI.Service.Interface;
+using CoderAPI.WhatsApp.Interface;
 using MassTransit.Courier.Contracts;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
@@ -15,15 +16,21 @@ namespace CoderAPI.Service.Implementation
         private readonly IUserRepository _userRepository;
         private readonly IUserPlanRepository _userPlanRepository;
         private readonly IOtpHelper _otpGenerate;
+        private readonly ISendEmailHelper _sendEmailHelper;
         private readonly ICustomLogger _logger;
+        private readonly IMessageHelper _messageHelper;
+        private readonly IWhatsappHelper _whatsappHelper;
 
-        public AuthService(IJwtHelper jwtHelper, IUserRepository userRepository, ICustomLogger logger, IUserPlanRepository userPlanRepository, IOtpHelper otpGenerate)
+        public AuthService(IJwtHelper jwtHelper, IUserRepository userRepository, ICustomLogger logger, IUserPlanRepository userPlanRepository, IOtpHelper otpGenerate, ISendEmailHelper sendEmailHelper, IMessageHelper messageHelper, IWhatsappHelper whatsappHelper)
         {
             _jwtHelper = jwtHelper;
             _userRepository = userRepository;
             _logger = logger;
             _userPlanRepository = userPlanRepository;
+            _sendEmailHelper = sendEmailHelper;
+            _messageHelper = messageHelper;
             _otpGenerate = otpGenerate;
+            _whatsappHelper = whatsappHelper;
         }
 
         public async Task<StatusResponse> CheckUserName(CustomString userName)
@@ -62,6 +69,16 @@ namespace CoderAPI.Service.Implementation
                         Message = $"The email with {phone.Value} already exists"
                     };
                     var otp = _otpGenerate.GenerateOtp(phone.Value);
+                    var mailContent = _messageHelper.GetOtpMessage(otp);
+                    var isSend = await _sendEmailHelper.SendTextEmail(phone.Value, mailContent.subject, mailContent.body);
+                    if (!isSend)
+                    {
+                        return new GenerateOtp
+                        {
+                            Status = false,
+                            Message = "Failed to send OTP email. Please try again."
+                        };
+                    }
                     return new GenerateOtp
                     {
                         Otp = otp,
@@ -78,6 +95,8 @@ namespace CoderAPI.Service.Implementation
                         Message = $"The phone with {phone.Value} is already registered"
                     };
                     var otp = _otpGenerate.GenerateOtp(phone.Value);
+                    var whatsappContent = _messageHelper.GetOtpMessage(otp);
+                    var isSend = await _whatsappHelper.SendMessage(phone.Value, whatsappContent.body);
                     return new GenerateOtp
                     {
                         Otp = otp,

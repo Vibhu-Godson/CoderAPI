@@ -66,6 +66,9 @@ public partial class UserSolution
     [InverseProperty("UserSolutions")]
     public virtual Problem Problem { get; set; } = null!;
 
+    [InverseProperty("UserSolution")]
+    public virtual ICollection<ProblemDiscussion> ProblemDiscussions { get; set; } = new List<ProblemDiscussion>();
+
     [ForeignKey("UserId")]
     [InverseProperty("UserSolutions")]
     public virtual User User { get; set; } = null!;

@@ -60,6 +60,15 @@ public partial class User
     public string UserName { get; set; } = null!;
 
     [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussionView> ProblemDiscussionViews { get; set; } = new List<ProblemDiscussionView>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussion> ProblemDiscussions { get; set; } = new List<ProblemDiscussion>();
+
+    [InverseProperty("User")]
     public virtual ICollection<UserDetail> UserDetails { get; set; } = new List<UserDetail>();
 
     [InverseProperty("User")]

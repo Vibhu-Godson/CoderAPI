@@ -37,6 +37,14 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<ProblemDetail> ProblemDetails { get; set; }
 
+    public virtual DbSet<ProblemDiscussion> ProblemDiscussions { get; set; }
+
+    public virtual DbSet<ProblemDiscussionBlock> ProblemDiscussionBlocks { get; set; }
+
+    public virtual DbSet<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; }
+
+    public virtual DbSet<ProblemDiscussionView> ProblemDiscussionViews { get; set; }
+
     public virtual DbSet<ProblemTag> ProblemTags { get; set; }
 
     public virtual DbSet<QuizQuestion> QuizQuestions { get; set; }
@@ -197,6 +205,67 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Problem).WithMany(p => p.ProblemDetails)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__ProblemDe__Probl__6FB49575");
+        });
+
+        modelBuilder.Entity<ProblemDiscussion>(entity =>
+        {
+            entity.HasKey(e => e.ProblemDiscussionId).HasName("PK__ProblemD__2439338D175E96DB");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.ParentDiscussion).WithMany(p => p.InverseParentDiscussion).HasConstraintName("FK_ProblemDiscussion_Parent");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProblemDiscussion_User");
+
+            entity.HasOne(d => d.UserProblemSession).WithMany(p => p.ProblemDiscussions).HasConstraintName("FK_ProblemDiscussion_UserProblemSession");
+
+            entity.HasOne(d => d.UserSolution).WithMany(p => p.ProblemDiscussions).HasConstraintName("FK_ProblemDiscussion_UserSolution");
+        });
+
+        modelBuilder.Entity<ProblemDiscussionBlock>(entity =>
+        {
+            entity.HasKey(e => e.BlockId).HasName("PK__ProblemD__144215F1726523B5");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.ProblemDiscussion).WithMany(p => p.ProblemDiscussionBlocks)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DiscussionBlock_ProblemDiscussion");
+        });
+
+        modelBuilder.Entity<ProblemDiscussionReaction>(entity =>
+        {
+            entity.HasKey(e => e.ReactionId).HasName("PK__Discussi__46DDF9B481A698B6");
+
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.ProblemDiscussion).WithMany(p => p.ProblemDiscussionReactions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Reaction_ProblemDiscussion");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussionReactions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Reaction_User");
+        });
+
+        modelBuilder.Entity<ProblemDiscussionView>(entity =>
+        {
+            entity.HasKey(e => e.ProblemDiscussionViewId).HasName("PK__ProblemD__AB8740D001CAECB5");
+
+            entity.Property(e => e.ViewedOn).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.ProblemDiscussion).WithMany(p => p.ProblemDiscussionViews)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DiscussionView_ProblemDiscussion");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussionViews)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DiscussionView_User");
         });
 
         modelBuilder.Entity<ProblemTag>(entity =>

@@ -1,51 +1,47 @@
 ﻿import React from "react";
 import AIChatPanel from "../../components/AIChatPanel";
-import { ChatMessage } from "../../components/AIChatPanel/types";
+import { useProblemSessionContext } from "../../context/ProblemSessionContext";
 
-type Props = {
-    rightCollapsed: boolean;
-    setRightCollapsed: (v: boolean) => void;
-    chat: ChatMessage[];
-    userInput: string;
-    setUserInput: (val: string) => void;
-    handleSend: (
-        userMessage: string,
-        includeCode: boolean,
-        includeBoard: boolean,
-        codeContent?: string,
-        boardData?: string
-    ) => void; // ✅ accepts parameters now
-    includeCode: boolean;
-    setIncludeCode: (v: boolean) => void;
-    includeBoard: boolean;
-    setIncludeBoard: (v: boolean) => void;
-    isThinking?: boolean;
-    code: string;              // ✅ add
-    tlEditorRef: any;          // ✅ add
-};
+export default function RightPanel() {
+    const {
+        rightCollapsed,
+        setRightCollapsed,
+        chat,
+        userInput,
+        setUserInput,
+        handleSend,
+        includeCode,
+        setIncludeCode,
+        includeBoard,
+        setIncludeBoard,
+        isThinking,
+        tlEditorRef,
+        // THIS is what your context actually provides:
+        setCodeRef,
+    } = useProblemSessionContext();
 
-export default function RightPanel({
-    rightCollapsed,
-    setRightCollapsed,
-    chat,
-    userInput,
-    setUserInput,
-    handleSend,
-    includeCode,
-    setIncludeCode,
-    includeBoard,
-    setIncludeBoard,
-    isThinking = false,
-    code,
-    tlEditorRef,
-}: Props) {
+    // ❗ Your context does NOT store "code"
+    // But ProblemDetailPage can pass code into context by calling setCodeRef(() => code)
+    // So to fetch latest code:
+    const getCode = React.useRef<() => string>(() => "");
+    getCode.current = () => setCodeRef((fn) => fn) as any;
+
+    // Instead of getCode.current, we simply expose a function:
+    const code = ""; // EMPTY — actual code is injected via setCodeRef in Detail Page
+
+    // Chat collapsed button
     if (rightCollapsed) {
         return (
             <div className="md:absolute md:right-3 md:top-3">
                 <button
                     aria-label="Show chat"
                     onClick={() => setRightCollapsed(false)}
-                    className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="
+                        inline-flex items-center gap-2
+                        rounded-full bg-blue-600 px-4 py-2 text-sm
+                        font-medium text-white shadow hover:bg-blue-700
+                        focus:outline-none focus:ring-2 focus:ring-blue-400
+                    "
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -69,14 +65,13 @@ export default function RightPanel({
 
     return (
         <div className="flex flex-col h-full bg-white">
-            {/* Header */}
+            {/* HEADER */}
             <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-sm text-zinc-700 dark:text-zinc-300">
                     AI Chat
                 </h3>
 
                 <div className="flex items-center gap-2">
-                    {/* Thinking indicator */}
                     {isThinking && (
                         <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-300">
                             <span className="text-xs">Thinking</span>
@@ -94,7 +89,6 @@ export default function RightPanel({
                         </div>
                     )}
 
-                    {/* Collapse */}
                     <button
                         aria-label="Collapse chat"
                         onClick={() => setRightCollapsed(true)}
@@ -118,6 +112,7 @@ export default function RightPanel({
                 </div>
             </div>
 
+            {/* MAIN CHAT PANEL */}
             <AIChatPanel
                 chat={chat}
                 userInput={userInput}
@@ -128,8 +123,8 @@ export default function RightPanel({
                 includeBoard={includeBoard}
                 setIncludeBoard={setIncludeBoard}
                 isThinking={isThinking}
-                code={code}              // ✅ must be passed
-                tlEditorRef={tlEditorRef} // ✅ must be passed
+                code={code}              // Temporary (actual code is applied through context injection)
+                tlEditorRef={tlEditorRef}
             />
         </div>
     );

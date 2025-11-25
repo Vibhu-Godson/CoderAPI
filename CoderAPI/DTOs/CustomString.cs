@@ -13,4 +13,9 @@
     {
         public long ProblemDetailId { get; set; }
     }
+    public class UserChatRequest
+    {
+        public string Value { get; set; }
+        public string Placeholder { get; set; }
+    }
 }

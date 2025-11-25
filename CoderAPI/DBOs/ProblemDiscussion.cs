@@ -50,6 +50,9 @@ public partial class ProblemDiscussion
     public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
 
     [InverseProperty("ProblemDiscussion")]
+    public virtual ICollection<ProblemDiscussionTag> ProblemDiscussionTags { get; set; } = new List<ProblemDiscussionTag>();
+
+    [InverseProperty("ProblemDiscussion")]
     public virtual ICollection<ProblemDiscussionView> ProblemDiscussionViews { get; set; } = new List<ProblemDiscussionView>();
 
     [ForeignKey("UserId")]

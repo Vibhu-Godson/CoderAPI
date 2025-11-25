@@ -10,7 +10,7 @@ namespace CoderAPI.Service.Interface.UserDetails
         Task<StatusResponse> AddUserEducation(UserEducationDto education, long UserId);
         Task<StatusResponse> AddUserProject(UserProjectDto project, long UserId);
         Task<StatusResponse> AddUserMotivation(CustomString motivation, long UserId);
-        Task<UserOnboardChatResponse> GetUserChatResponse(CustomString chat, long userId);
+        Task<UserOnboardChatResponse> GetUserChatResponse(UserChatRequest chat, long userId);
         Task<StatusResponse> AddUserSkills(CustomString skills, long userId);
         Task<Dictionary<string, string>> UserOnboardingStatus(long userId);
         Task<CustomString> GetRoleName(long userId);

@@ -139,11 +139,11 @@ namespace CoderAPI.Service.Implementation.UserDetail
             }
         }
 
-        public async Task<UserOnboardChatResponse> GetUserChatResponse(CustomString chat, long userId)
+        public async Task<UserOnboardChatResponse> GetUserChatResponse(UserChatRequest chat, long userId)
         {
             try
             {
-                var prompt = _promptSelector.BuildOnboardingPrompt(chat.Value);
+                var prompt = _promptSelector.BuildOnboardingPrompt(chat.Value, chat.Placeholder);
                 var rawResponse = await _geminiLLM.GetGeminiResponse(prompt);
                 var response = _geminiHelper.ExtractOnboardMessage(rawResponse);
                 return response;

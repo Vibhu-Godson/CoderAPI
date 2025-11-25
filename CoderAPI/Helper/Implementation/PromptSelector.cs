@@ -722,7 +722,7 @@ Note:
             return prompt;
         }
 
-        public string BuildOnboardingPrompt(string chat)
+        public string BuildOnboardingPrompt(string chat, string placeholder)
         {
             var prompt = $@"
 You are an information extraction system for AmCoder’s onboarding flow.
@@ -772,6 +772,11 @@ Rules:
 5. If information is ambiguous, return null for that field.
 6. Output only the JSON. No explanation.
 
+Placeholder:
+{placeholder}
+This placeholder defines the keyword of the Json object you'll return 
+if placeholder says experience -> you give records in experience (if you cant know all the values then you may guess)
+make sure to focus on the given placeholder only and dont try to fill other fields
 User Message:
 ""{chat}""
 

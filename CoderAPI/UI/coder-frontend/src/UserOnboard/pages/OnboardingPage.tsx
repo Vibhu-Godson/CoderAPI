@@ -21,9 +21,7 @@ import StepProject from "../components/StepProject";
 import StepSkills from "../components/StepSkills";
 import StepMotivation from "../components/StepMotivation";
 
-import {
-    useSendChatMessageMutation,
-} from "../apis/userChatApi";
+import { useSendChatMessageMutation } from "../apis/userChatApi";
 
 import {
     useSetCurrentRoleMutation,
@@ -126,8 +124,18 @@ export default function OnboardingPage() {
 
     const handleChatUserSend = async (text: string) => {
         pushChat("user", text);
-        const res = await sendChat({ value: text }).unwrap();
+        const res = await sendChat({
+            value: text,
+            placeholder: state.step,
+        }).unwrap();
+
         await applyLLMExtraction(normalizeChat(res));
+    };
+
+    const autoSubmit = (key: StepKey, data: any) => {
+        setTimeout(() => {
+            handleFormSubmit(key, data);
+        }, 2000);
     };
 
     const applyLLMExtraction = async (res: LLMExtraction) => {
@@ -135,121 +143,138 @@ export default function OnboardingPage() {
         // ============= ROLE =============
         if (res.role) {
             pushChat("bot", "Updating your role...");
-            await new Promise(r => setTimeout(r, 300));
-
-            await saveRole({ value: res.role });
             setState((s) => ({ ...s, role: res.role }));
 
-            pushChat("bot", `You are a ${res.role.replaceAll("_", " ")}.`);
-            setState((s) => ({ ...s, step: "education" }));
+            // Show the form filled for role
+            autoSubmit("role", res.role);
+            return;
         }
 
         // ============= EDUCATION =============
         if (res.education) {
             const cleaned = clean<EducationDto>(res.education);
 
+            pushChat("bot", "Extracting your education details...");
             setState((s) => ({ ...s, education: cleaned }));
-            pushChat("bot", "Filling your education details...");
-            await new Promise(r => setTimeout(r, 400));
 
-            await saveEdu(cleaned as any);
-            pushChat("bot", `Saved your education at ${cleaned.institute}.`);
-
-            setState((s) => ({ ...s, step: "experience" }));
+            autoSubmit("education", cleaned);
+            return;
         }
 
         // ============= EXPERIENCE =============
         if (res.experience) {
             const cleaned = clean<ExperienceDto>(res.experience);
 
+            pushChat("bot", "Extracting your work experience...");
             setState((s) => ({ ...s, experience: cleaned }));
-            pushChat("bot", "Adding your work experience...");
-            await new Promise(r => setTimeout(r, 400));
 
-            await saveExp(cleaned as any);
-            pushChat("bot", `Saved your experience at ${cleaned.company}.`);
-
-            setState((s) => ({ ...s, step: "project" }));
+            autoSubmit("experience", cleaned);
+            return;
         }
 
         // ============= PROJECT =============
         if (res.project) {
             const cleaned = clean<ProjectDto>(res.project);
 
+            pushChat("bot", "Extracting your project details...");
             setState((s) => ({ ...s, project: cleaned }));
-            pushChat("bot", "Filling your project details...");
-            await new Promise(r => setTimeout(r, 400));
 
-            await saveProject(cleaned as any);
-            pushChat("bot", `Saved your project "${cleaned.title}".`);
-
-            setState((s) => ({ ...s, step: "skills" }));
+            autoSubmit("project", cleaned);
+            return;
         }
 
         // ============= SKILLS =============
         if (res.skills) {
+            pushChat("bot", "Extracting your skills...");
             setState((s) => ({ ...s, skills: res.skills }));
-            pushChat("bot", "Recording your skills...");
-            await new Promise(r => setTimeout(r, 400));
 
-            await saveSkills({ value: res.skills });
-            pushChat("bot", "Skills saved!");
-
-            setState((s) => ({ ...s, step: "motivation" }));
+            autoSubmit("skills", res.skills);
+            return;
         }
 
         // ============= MOTIVATION =============
         if (res.motivation) {
+            pushChat("bot", "Extracting your motivation...");
             setState((s) => ({ ...s, motivation: res.motivation }));
-            pushChat("bot", "Saving your motivation...");
-            await new Promise(r => setTimeout(r, 300));
 
-            await saveMotivation({ value: res.motivation });
-            pushChat("bot", "Motivation saved!");
-
-            setState((s) => ({ ...s, step: "done" }));
+            autoSubmit("motivation", res.motivation);
+            return;
         }
     };
 
     const handleFormSubmit = async (key: StepKey, data: any) => {
         pushChat("user", key === "role" ? `I am a ${data}` : JSON.stringify(data));
 
+        // Save first (API call)
         if (key === "role") {
             await saveRole({ value: data });
-            setState((s) => ({ ...s, role: data, step: "education" }));
             pushChat("bot", "Great! Let's add your education.");
+
+            // Update data only
+            setState((s) => ({ ...s, role: data }));
+
+            // Delay switching to next form
+            setTimeout(() => {
+                setState((s) => ({ ...s, step: "education" }));
+            }, 800);
         }
 
         if (key === "education") {
             await saveEdu(data);
-            setState((s) => ({ ...s, education: data, step: "experience" }));
             pushChat("bot", "Nice! Now your latest work experience.");
+
+            setState((s) => ({ ...s, education: data }));
+
+            setTimeout(() => {
+                setState((s) => ({ ...s, step: "experience" }));
+            }, 800);
         }
 
         if (key === "experience") {
             await saveExp(data);
-            setState((s) => ({ ...s, experience: data, step: "project" }));
             pushChat("bot", "Awesome! Let's add a project.");
+
+            setState((s) => ({ ...s, experience: data }));
+
+            setTimeout(() => {
+                setState((s) => ({ ...s, step: "project" }));
+            }, 800);
         }
 
         if (key === "project") {
             await saveProject(data);
-            setState((s) => ({ ...s, project: data, step: "skills" }));
             pushChat("bot", "Great! Add some skills now.");
+
+            setState((s) => ({ ...s, project: data }));
+
+            setTimeout(() => {
+                setState((s) => ({ ...s, step: "skills" }));
+            }, 800);
         }
 
         if (key === "skills") {
             await saveSkills({ value: data });
-            setState((s) => ({ ...s, skills: data, step: "motivation" }));
             pushChat("bot", "Nice! What motivates you?");
+
+            setState((s) => ({ ...s, skills: data }));
+
+            setTimeout(() => {
+                setState((s) => ({ ...s, step: "motivation" }));
+            }, 800);
         }
 
         if (key === "motivation") {
             await saveMotivation({ value: data });
-            setState((s) => ({ ...s, motivation: data, step: "done" }));
             pushChat("bot", "All set! Your onboarding is complete 🎉");
+
+            setState((s) => ({ ...s, motivation: data }));
+
+            setTimeout(() => {
+                setState((s) => ({ ...s, step: "done" }));
+            }, 800);
         }
     };
+
 
     return (
         <div className="h-screen bg-gray-100 flex justify-center items-center px-4">
@@ -266,9 +291,7 @@ export default function OnboardingPage() {
                     <div className="flex-1 p-6 overflow-y-auto">
 
                         {state.step === "role" && (
-                            <StepRole
-                                onSelect={(v) => handleFormSubmit("role", v)}
-                            />
+                            <StepRole onSelect={(v) => handleFormSubmit("role", v)} />
                         )}
 
                         {state.step === "education" && (

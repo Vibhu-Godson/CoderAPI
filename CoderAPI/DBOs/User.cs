@@ -63,6 +63,9 @@ public partial class User
     public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
 
     [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussionTag> ProblemDiscussionTags { get; set; } = new List<ProblemDiscussionTag>();
+
+    [InverseProperty("User")]
     public virtual ICollection<ProblemDiscussionView> ProblemDiscussionViews { get; set; } = new List<ProblemDiscussionView>();
 
     [InverseProperty("User")]

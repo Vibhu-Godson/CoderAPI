@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { ProjectDto } from "../types";
 
 export default function StepProject({
@@ -19,6 +19,18 @@ export default function StepProject({
         projectLink: initial?.projectLink ?? "",
     });
 
+    // 🔥 AUTO-FILL FIX
+    useEffect(() => {
+        if (initial) {
+            setForm({
+                title: initial.title ?? "",
+                description: initial.description ?? "",
+                techStacks: initial.techStacks ?? "",
+                projectLink: initial.projectLink ?? "",
+            });
+        }
+    }, [initial]);
+
     const disabled =
         !form.title || !form.description || !form.techStacks || !!isSaving;
 
@@ -33,12 +45,14 @@ export default function StepProject({
                     value={form.title ?? ""}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
+
                 <input
                     className="rounded-xl border border-slate-300 px-3 py-2"
                     placeholder="Tech Stacks"
                     value={form.techStacks ?? ""}
                     onChange={(e) => setForm({ ...form, techStacks: e.target.value })}
                 />
+
                 <div className="md:col-span-2">
                     <textarea
                         className="w-full rounded-xl border border-slate-300 px-3 py-2"
@@ -50,6 +64,7 @@ export default function StepProject({
                         }
                     />
                 </div>
+
                 <input
                     className="rounded-xl border border-slate-300 px-3 py-2 md:col-span-2"
                     placeholder="Project Link"
@@ -66,7 +81,6 @@ export default function StepProject({
                         Back
                     </button>
                 )}
-
                 <button
                     onClick={() => onSubmit(form)}
                     disabled={disabled}

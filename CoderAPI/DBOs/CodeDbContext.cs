@@ -43,6 +43,8 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; }
 
+    public virtual DbSet<ProblemDiscussionTag> ProblemDiscussionTags { get; set; }
+
     public virtual DbSet<ProblemDiscussionView> ProblemDiscussionViews { get; set; }
 
     public virtual DbSet<ProblemTag> ProblemTags { get; set; }
@@ -251,6 +253,19 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussionReactions)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Reaction_User");
+        });
+
+        modelBuilder.Entity<ProblemDiscussionTag>(entity =>
+        {
+            entity.HasKey(e => e.ProblemDiscussionTagId).HasName("PK__ProblemD__04DD4AFBE6999DE1");
+
+            entity.HasOne(d => d.ProblemDiscussion).WithMany(p => p.ProblemDiscussionTags)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProblemDi__Probl__3DE82FB7");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussionTags)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProblemDi__UserI__3CF40B7E");
         });
 
         modelBuilder.Entity<ProblemDiscussionView>(entity =>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 
 export default function StepMotivation({
     initial,
@@ -13,9 +13,16 @@ export default function StepMotivation({
 }) {
     const [value, setValue] = useState(initial || "");
 
+    // 🔥 AUTO-FILL FIX
+    useEffect(() => {
+        if (initial !== undefined) {
+            setValue(initial || "");
+        }
+    }, [initial]);
+
     return (
         <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">What�s driving you right now?</h3>
+            <h3 className="text-lg font-semibold mb-4">What’s driving you right now?</h3>
 
             <textarea
                 className="w-full border rounded-xl px-3 py-2"

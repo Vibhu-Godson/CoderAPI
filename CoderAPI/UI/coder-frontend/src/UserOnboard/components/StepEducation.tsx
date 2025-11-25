@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { EducationDto } from "../types";
 
 export default function StepEducation({
@@ -18,6 +18,18 @@ export default function StepEducation({
         fieldOfStudy: initial?.fieldOfStudy ?? "",
         completionYear: initial?.completionYear ?? "",
     });
+
+    // 🔥 AUTO-FILL FIX
+    useEffect(() => {
+        if (initial) {
+            setForm({
+                institute: initial.institute ?? "",
+                degree: initial.degree ?? "",
+                fieldOfStudy: initial.fieldOfStudy ?? "",
+                completionYear: initial.completionYear ?? "",
+            });
+        }
+    }, [initial]);
 
     const disabled =
         !form.institute || !form.degree || !form.fieldOfStudy || !form.completionYear || !!isSaving;
@@ -59,7 +71,6 @@ export default function StepEducation({
                         Back
                     </button>
                 )}
-
                 <button
                     onClick={() => onSubmit(form)}
                     disabled={disabled}

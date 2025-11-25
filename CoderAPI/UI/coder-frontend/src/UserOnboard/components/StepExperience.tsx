@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { ExperienceDto } from "../types";
 
 export default function StepExperience({
@@ -19,6 +19,19 @@ export default function StepExperience({
         enddate: initial?.enddate ?? "",
         description: initial?.description ?? "",
     });
+
+    // 🔥 AUTO-FILL FIX
+    useEffect(() => {
+        if (initial) {
+            setForm({
+                company: initial.company ?? "",
+                role: initial.role ?? "",
+                startDate: initial.startDate ?? "",
+                enddate: initial.enddate ?? "",
+                description: initial.description ?? "",
+            });
+        }
+    }, [initial]);
 
     const disabled =
         !form.company || !form.role || !form.startDate || !form.enddate || !!isSaving;
@@ -52,15 +65,14 @@ export default function StepExperience({
                     value={form.enddate ?? ""}
                     onChange={(e) => setForm({ ...form, enddate: e.target.value })}
                 />
+
                 <div className="md:col-span-2">
                     <textarea
                         className="w-full rounded-xl border border-slate-300 px-3 py-2"
                         rows={3}
                         placeholder="Description"
                         value={form.description ?? ""}
-                        onChange={(e) =>
-                            setForm({ ...form, description: e.target.value })
-                        }
+                        onChange={(e) => setForm({ ...form, description: e.target.value })}
                     />
                 </div>
             </div>
@@ -71,7 +83,6 @@ export default function StepExperience({
                         Back
                     </button>
                 )}
-
                 <button
                     onClick={() => onSubmit(form)}
                     disabled={disabled}

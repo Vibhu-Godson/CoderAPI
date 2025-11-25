@@ -120,7 +120,7 @@ namespace CoderAPI.Controllers.Users
         }
 
         [HttpPost("Chat")]
-        public async Task<ActionResult<UserOnboardChatResponse>> GetChatResponse(CustomString chat)
+        public async Task<ActionResult<UserOnboardChatResponse>> GetChatResponse(UserChatRequest chat)
         {
             try
             {

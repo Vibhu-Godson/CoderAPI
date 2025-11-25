@@ -3,6 +3,7 @@ import { API_URLS } from "../../api/api_urls";
 
 export interface UserChatRequest {
     value: string;
+    placeholder: string;
 }
 
 export interface UserChatResponse {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 
 export default function StepSkills({
     initial,
@@ -12,6 +12,13 @@ export default function StepSkills({
     isSaving?: boolean;
 }) {
     const [value, setValue] = useState(initial ?? "");
+
+    // 🔥 AUTO-FILL FIX
+    useEffect(() => {
+        if (initial !== undefined) {
+            setValue(initial ?? "");
+        }
+    }, [initial]);
 
     const disabled = !value.trim() || !!isSaving;
 

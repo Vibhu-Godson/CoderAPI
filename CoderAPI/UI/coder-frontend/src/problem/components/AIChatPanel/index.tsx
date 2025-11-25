@@ -13,8 +13,8 @@ export default function AIChatPanel({
     includeBoard,
     setIncludeBoard,
     isThinking,
-    code,           // ✅ receive
-    tlEditorRef,    // ✅ receive
+    code,
+    tlEditorRef,
 }: ChatPanelProps) {
     const listRef = useRef<HTMLDivElement>(null);
 
@@ -25,20 +25,13 @@ export default function AIChatPanel({
         });
     }, [chat, isThinking]);
 
-    // ✅ Collect current whiteboard JSON
     const getBoardData = () => {
         if (!tlEditorRef?.current) return undefined;
-        const editor = tlEditorRef.current;
         try {
-            if (editor.store?.serialize) {
-                return JSON.stringify(editor.store.serialize());
-            }
-            if (editor.getSnapshot) {
-                return JSON.stringify(editor.getSnapshot());
-            }
-        } catch (err) {
-            console.error("Error serializing whiteboard:", err);
-        }
+            const e = tlEditorRef.current;
+            if (e.store?.serialize) return JSON.stringify(e.store.serialize());
+            if (e.getSnapshot) return JSON.stringify(e.getSnapshot());
+        } catch { }
         return undefined;
     };
 
@@ -48,46 +41,27 @@ export default function AIChatPanel({
         onSend(userInput, includeCode, includeBoard, code, boardData);
     };
 
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        } else if (e.key === "Enter" && e.ctrlKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    };
-
     return (
-        <div className="flex h-full flex-col px-2 pb-3">
-            {/* Scrollable message list */}
+        <div className="flex h-full flex-col">
             <div
                 ref={listRef}
-                className="flex-1 overflow-y-auto scrollbar-hide pr-1"
-                style={{
-                    minHeight: "120px",
-                    maxHeight: "calc(100vh - 230px)", // prevents overflow beyond viewport
-                }}
+                className="flex-1 overflow-y-auto scrollbar-hide"
             >
                 <MessageList chat={chat} isThinking={isThinking} />
             </div>
 
-            {/* Composer stays visible */}
-            <div className="sticky bottom-0 bg-white dark:bg-zinc-900 pt-2">
-                <Composer
-                    userInput={userInput}
-                    setUserInput={setUserInput}
-                    onSend={handleSendMessage}
-                    includeCode={includeCode}
-                    setIncludeCode={setIncludeCode}
-                    includeBoard={includeBoard}
-                    setIncludeBoard={setIncludeBoard}
-                    isThinking={isThinking}
-                    code={code}
-                    tlEditorRef={tlEditorRef}
-                />
-            </div>
+            <Composer
+                userInput={userInput}
+                setUserInput={setUserInput}
+                onSend={handleSendMessage}
+                includeCode={includeCode}
+                setIncludeCode={setIncludeCode}
+                includeBoard={includeBoard}
+                setIncludeBoard={setIncludeBoard}
+                isThinking={isThinking}
+                code={code}
+                tlEditorRef={tlEditorRef}
+            />
         </div>
     );
 }

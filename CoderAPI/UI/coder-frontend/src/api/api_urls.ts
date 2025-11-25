@@ -91,4 +91,10 @@ export const API_URLS = {
         add: "/api/UserFeedback/Add",
         reviews: "/api/UserFeedback/Reviews",
     },
+    problemDiscussion: {
+        add: "/api/ProblemDiscussion/Add",
+        update: "/api/ProblemDiscussion/Update",
+        getAll: "/api/ProblemDiscussion/All",
+        open: "/api/ProblemDiscussion/Open",
+    },
 };

@@ -1,30 +1,48 @@
-// src/features/Home/pages/HomePage.tsx
-import { useGetDashboardQuery } from "../homeApi";
-import ProgressCard from "../components/ProgressCard";
-import MentorSuggestions from "../components/MentorSuggestions";
-import CommunityHighlights from "../components/CommunityHighlights";
-import AnnouncementBanner from "../components/AnnouncementBanner";
+import React, { useState } from "react";
+
+import HeroSection from "../components/HeroSection";
+//import ProblemCategoriesSection from "../components/ProblemCategoriesSection";
+import LearningPathSection from "../components/LearningPathSection";
+import CommunitySection from "../components/CommunitySection";
+//import PricingSection from "../components/PricingSection";
+import WorkshopsSection from "../components/WorkshopsSection";
+import MissionSection from "../components/MissionSection";
+import SuccessStoriesSection from "../components/SuccessStoriesSection";
+import Footer from "../components/Footer";
 
 export default function HomePage() {
-    const { data, isLoading } = useGetDashboardQuery();
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-    if (isLoading) return <p className="text-center mt-10">Loading dashboard...</p>;
-    if (!data) return <p className="text-center mt-10 text-red-500">Failed to load dashboard.</p>;
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const { clientX, clientY } = e;
+        setMousePosition({
+            x: clientX / window.innerWidth,
+            y: clientY / window.innerHeight,
+        });
+    };
 
     return (
-        <div className="min-h-screen bg-gray-100 py-8 px-6">
-            <AnnouncementBanner announcements={data.announcements} />
+        <div className="min-h-screen">
+            <HeroSection
+                mousePosition={mousePosition}
+                onMouseMove={handleMouseMove}
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                    <ProgressCard {...data.progress} />
-                    <MentorSuggestions {...data.mentorSuggestions} />
-                </div>
+            {/*<ProblemCategoriesSection />*/}
 
-                <div className="space-y-6">
-                    <CommunityHighlights highlights={data.communityHighlights} />
-                </div>
-            </div>
+            <LearningPathSection />
+
+            <CommunitySection />
+
+            {/*<PricingSection />*/}
+
+            <WorkshopsSection />
+
+            <MissionSection />
+
+            <SuccessStoriesSection />
+
+            <Footer />
         </div>
     );
 }

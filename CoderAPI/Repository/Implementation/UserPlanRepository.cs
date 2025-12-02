@@ -22,6 +22,18 @@ namespace CoderAPI.Repository.Implementation
         {
             try
             {
+                var allActive = await _context.UserPlans
+                        .Where(up => up.UserId == plan.UserId && up.IsActive==true)
+                        .ToListAsync();
+                if (allActive.Count > 0)
+                {
+                    foreach(var ac in allActive)
+                    {
+                        ac.IsActive = false;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+
                 await _context.UserPlans.AddAsync(plan);
                 var ok = await _context.SaveChangesAsync();
                 if (ok > 0) return plan.UserPlanId;
@@ -111,7 +123,6 @@ namespace CoderAPI.Repository.Implementation
                     userPLan != null 
                     ? (userPLan.SubscriptionLevel ?? SubscriptionLevel.Free.ToString(), userPLan.EndDate) 
                     : (SubscriptionLevel.Free.ToString(), DateTime.MaxValue);
-                throw new NotImplementedException();
             }
             catch (Exception ex)
             {

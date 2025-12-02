@@ -1,4 +1,5 @@
 ﻿using CoderAPI.Helper.Interface;
+using CoderAPI.Enum;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,15 +21,15 @@ namespace CoderAPI.Helper.Implementation
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(ClaimTypes.Name, phone ?? string.Empty),
-                new Claim("subscription", subscriptionLevel ?? "Free"),
+                new Claim("subscription", subscriptionLevel ?? SubscriptionLevel.Free.ToString()),
                 new Claim("subscriptionExpiry", subscriptionExpiry?.ToUniversalTime().ToString("o") ?? string.Empty)
             };
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
+                expires: DateTime.UtcNow.AddDays(1),
                 signingCredentials: credentials
             );
 

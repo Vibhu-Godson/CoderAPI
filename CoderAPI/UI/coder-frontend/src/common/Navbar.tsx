@@ -63,7 +63,7 @@ export default function Navbar() {
 
                 {/* Brand */}
                 <Link
-                    to="/home"
+                    to="/"
                     className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
                 >
                     AmCoder
@@ -71,7 +71,7 @@ export default function Navbar() {
 
                 {/* Desktop navigation */}
                 <div className="hidden md:flex items-center space-x-6">
-                    <NavLink to="/home" className={navClass}>
+                    <NavLink to="/" className={navClass}>
                         <div className="flex items-center gap-1">
                             <Home size={18} /> Home
                         </div>
@@ -83,11 +83,11 @@ export default function Navbar() {
                         </div>
                     </NavLink>
 
-                    <NavLink to="/courses" className={navClass}>
-                        <div className="flex items-center gap-1">
-                            <BookOpen size={18} /> Courses
-                        </div>
-                    </NavLink>
+                    {/*<NavLink to="/courses" className={navClass}>*/}
+                    {/*    <div className="flex items-center gap-1">*/}
+                    {/*        <BookOpen size={18} /> Courses*/}
+                    {/*    </div>*/}
+                    {/*</NavLink>*/}
 
                     <NavLink to="/community" className={navClass}>
                         <div className="flex items-center gap-1">
@@ -124,7 +124,7 @@ export default function Navbar() {
 
                     {dropdownOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl border rounded-xl overflow-hidden">
-                            <Link to="/profile" className="block px-4 py-3 hover:bg-slate-100">
+                            <Link to={`/profile/${userName}`} className="block px-4 py-3 hover:bg-slate-100">
                                 Profile
                             </Link>
                             <Link to="/settings" className="block px-4 py-3 hover:bg-slate-100">

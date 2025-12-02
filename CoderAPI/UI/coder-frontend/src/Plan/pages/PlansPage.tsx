@@ -1,9 +1,13 @@
-﻿import React from "react";
+﻿import React, { useState } from "react";
 import {
     useGetPlansQuery,
     useCreateOrderMutation,
     useVerifyPaymentMutation,
 } from "../planApi";
+import { Toast } from "../../auth/component/Toast";
+import { useDispatch } from "react-redux";
+import { logout } from "../../auth/authSlice";
+import { useNavigate } from "react-router-dom";
 
 declare global {
     interface Window {
@@ -16,7 +20,25 @@ const PlansPage: React.FC = () => {
     const [createOrder] = useCreateOrderMutation();
     const [verifyPayment] = useVerifyPaymentMutation();
 
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const [toast, setToast] = useState({
+        open: false,
+        msg: "",
+        kind: "success" as "success" | "error",
+    });
+
     const plans = data?.items ?? [];
+
+    const showToast = (msg: string, kind: "success" | "error") => {
+        setToast({ open: true, msg, kind });
+    };
+
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate("/login", { replace: true });
+    };
 
     const handlePurchase = async (planId: number) => {
         try {
@@ -24,7 +46,7 @@ const PlansPage: React.FC = () => {
 
             const options = {
                 key: orderRes.key,
-                amount: orderRes.price * 100, // in paise
+                amount: orderRes.price * 100,
                 currency: orderRes.currency,
                 name: "Godson Ekam",
                 description: "One-time Plan Purchase",
@@ -39,23 +61,27 @@ const PlansPage: React.FC = () => {
                         }).unwrap();
 
                         if (verifyRes.status) {
-                            alert("✅ Payment successful! Your plan is now active.");
+                            showToast("Payment successful! Please login again.", "success");
+
+                            setTimeout(() => {
+                                handleLogout();
+                            }, 1200);
                         } else {
-                            alert("❌ Payment verification failed.");
+                            showToast("Payment verification failed.", "error");
                         }
                     } catch (err) {
                         console.error("Verification failed:", err);
-                        alert("Error verifying payment.");
+                        showToast("Error verifying payment.", "error");
                     }
                 },
-                theme: { color: "#2563eb" }, // Tailwind blue-600
+                theme: { color: "#2563eb" },
             };
 
-            const razorpay = new (window as any).Razorpay(options);
+            const razorpay = new window.Razorpay(options);
             razorpay.open();
         } catch (err) {
             console.error("Payment initiation failed:", err);
-            alert("Something went wrong while initiating payment.");
+            showToast("Something went wrong while initiating payment.", "error");
         }
     };
 
@@ -82,9 +108,9 @@ const PlansPage: React.FC = () => {
                         <div
                             key={plan.planId}
                             className={`relative p-8 rounded-2xl w-80 shadow-xl border transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl 
-    ${isCurrent
-                                    ? "border-transparent bg-white ring-2 ring-blue-500 ring-offset-2 ring-offset-blue-100 shadow-blue-300"
-                                    : "border-gray-200 bg-white/90"
+                                ${isCurrent
+                                    ? "bg-white ring-2 ring-blue-500 ring-offset-2 ring-offset-blue-100"
+                                    : "bg-white/90 border-gray-200"
                                 }`}
                         >
                             {plan.isPopular && (
@@ -101,9 +127,7 @@ const PlansPage: React.FC = () => {
 
                             <h2 className="text-2xl font-bold mb-4 text-gray-800">{plan.name}</h2>
 
-                            <p className="text-gray-700 mb-6 leading-relaxed min-h-[60px]">
-                                {plan.description}
-                            </p>
+                            <p className="text-gray-700 mb-6 min-h-[60px]">{plan.description}</p>
 
                             <div className="text-5xl font-extrabold text-blue-600 mb-6">
                                 {isFree ? (
@@ -119,10 +143,11 @@ const PlansPage: React.FC = () => {
                             </div>
 
                             <ul className="text-left space-y-2 mb-8">
-                                {plan.features.map((f, idx) => (
+                                {plan.features.map((f: any, idx: number) => (
                                     <li
                                         key={idx}
-                                        className={`flex items-center gap-2 text-gray-700 ${!f.included && "opacity-60"}`}
+                                        className={`flex items-center gap-2 text-gray-700 ${!f.included && "opacity-60"
+                                            }`}
                                     >
                                         <span>{f.included ? "✅" : "❌"}</span>
                                         <span>{f.feature}</span>
@@ -134,7 +159,7 @@ const PlansPage: React.FC = () => {
                                 disabled={isFree || isCurrent}
                                 onClick={() => handlePurchase(plan.planId)}
                                 className={`w-full py-3 rounded-lg font-semibold transition-all duration-200
-            ${isFree
+                                    ${isFree
                                         ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                                         : isCurrent
                                             ? "bg-blue-50 text-blue-700 border border-blue-600 cursor-default"
@@ -148,10 +173,17 @@ const PlansPage: React.FC = () => {
                                         : "Upgrade Plan"}
                             </button>
                         </div>
-
                     );
                 })}
             </div>
+
+            {/* Toast */}
+            <Toast
+                open={toast.open}
+                title={toast.msg}
+                kind={toast.kind}
+                onClose={() => setToast((t) => ({ ...t, open: false }))}
+            />
         </div>
     );
 };

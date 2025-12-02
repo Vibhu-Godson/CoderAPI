@@ -36,6 +36,12 @@ public partial class SubTopic
 
     public long? UpdatedBy { get; set; }
 
+    [StringLength(50)]
+    public string? ContentType { get; set; }
+
+    [InverseProperty("SubTopic")]
+    public virtual ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
+
     [ForeignKey("TopicId")]
     [InverseProperty("SubTopics")]
     public virtual Topic Topic { get; set; } = null!;

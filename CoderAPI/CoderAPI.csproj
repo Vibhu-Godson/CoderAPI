@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Cloud.AIPlatform.V1" Version="3.46.0" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="MassTransit" Version="8.5.2" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
@@ -19,14 +21,37 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
     <PackageReference Include="Polly" Version="8.6.3" />
+    <PackageReference Include="Razorpay" Version="3.3.2" />
     <PackageReference Include="Scrutor" Version="6.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Hubs\" />
-    <Folder Include="MicroService\LLM\" />
     <Folder Include="MicroService\SignalR\" />
+    <Folder Include="UI\coder-frontend\src\auth\component\" />
+    <Folder Include="UI\coder-frontend\src\common\" />
+    <Folder Include="UI\coder-frontend\src\Community\types\" />
+    <Folder Include="UI\coder-frontend\src\Community\pages\" />
+    <Folder Include="UI\coder-frontend\src\config\" />
+    <Folder Include="UI\coder-frontend\src\Courses\components\" />
+    <Folder Include="UI\coder-frontend\src\Courses\pages\" />
+    <Folder Include="UI\coder-frontend\src\Courses\types\" />
+    <Folder Include="UI\coder-frontend\src\Feedback\apis\" />
+    <Folder Include="UI\coder-frontend\src\Home\pages\" />
+    <Folder Include="UI\coder-frontend\src\problem\components\AIChatPanel\" />
+    <Folder Include="UI\coder-frontend\src\problem\components\UserSession\" />
+    <Folder Include="UI\coder-frontend\src\problem\hooks\" />
+    <Folder Include="UI\coder-frontend\src\problem\pages\ProblemDetailPage\" />
+    <Folder Include="UI\coder-frontend\src\Settings\api\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\components\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\apis\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\hooks\" />
+    <Folder Include="UI\coder-frontend\src\UserOnboard\pages\" />
+    <Folder Include="UI\coder-frontend\src\Utils\" />
+    <Folder Include="UI\coder-frontend\src\Plan\components\" />
+    <Folder Include="UI\coder-frontend\src\Plan\pages\" />
+    <Folder Include="UI\coder-frontend\src\Service\" />
+    <Folder Include="UI\NewFolder\" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,21 @@
-﻿using CoderAPI.DBOs;
+﻿using CoderAPI.Consumers.CodeRunner;
+using CoderAPI.Consumers.LLM;
+using CoderAPI.DBOs;
+using CoderAPI.Hubs;
+using CoderAPI.MicroService.Judge0.Implementation;
+using CoderAPI.MicroService.Judge0.Interface;
+using CoderAPI.MicroService.LLM.Implementation;
+using CoderAPI.MicroService.LLM.Interface;
+using CoderAPI.MicroService.Queue.Implementation;
+using CoderAPI.MicroService.Queue.Interface;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using CoderAPI.Consumers.CodeRunner;
-using CoderAPI.Consumers.LLM;
+using CoderAPI.WhatsApp.Implementation;
+using CoderAPI.WhatsApp.Interface;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,7 +51,12 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddHttpClient<IWhatsappHelper, WhatsappHelper>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:3001/");
+});
 
+builder.Services.AddMemoryCache();
 // MassTransit + RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
@@ -72,20 +86,34 @@ builder.Services.AddMassTransit(x =>
 });
 builder.Services.AddMassTransitHostedService();
 
+builder.Services.AddSignalR();
+
 // Register DI
 builder.Services.Scan(scan => scan
     .FromApplicationDependencies()
-    .AddClasses(classes => classes.InNamespaces("CoderAPI.Repositories.Implementation"))
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.Repository.Implementation"))
         .AsImplementedInterfaces()
         .WithScopedLifetime()
-    .AddClasses(classes => classes.InNamespaces("CoderAPI.Services.Implementation"))
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.Service.Implementation"))
         .AsImplementedInterfaces()
         .WithScopedLifetime()
     .AddClasses(classes => classes.InNamespaces("CoderAPI.Helper.Implementation"))
         .AsImplementedInterfaces()
         .WithScopedLifetime()
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.MicroService.Judge0.Implementation"))
+        .AsImplementedInterfaces()
+        .WithScopedLifetime()
+    .AddClasses(classes => classes.InNamespaces("CoderAPI.MicroService.Queue.Implementation"))
+        .AsImplementedInterfaces()
+        .WithScopedLifetime()
 );
 
+// Register Judge0Service with HttpClient properly
+builder.Services.AddHttpClient<IJudge0Service, Judge0Service>();
+builder.Services.AddHttpClient<IGeminiLLM, GeminiLLM>();
+
+// Register QueuePublisher explicitly
+builder.Services.AddScoped<IQueuePublisher, QueuePublisher>();
 builder.Services.AddDbContext<CodeDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -100,11 +128,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Issuer"], // must match token audience
+            ValidAudience = builder.Configuration["Jwt:Audience"], // must match token audience
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -114,9 +154,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("AllowReactDev");
+app.MapHub<CodeExecutionHub>("/hubs/codeExecution");
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();

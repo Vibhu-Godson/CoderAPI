@@ -60,9 +60,14 @@ public partial class UserSolution
     [StringLength(255)]
     public string? StatusDescription { get; set; }
 
+    public bool IsSubmit { get; set; }
+
     [ForeignKey("ProblemId")]
     [InverseProperty("UserSolutions")]
     public virtual Problem Problem { get; set; } = null!;
+
+    [InverseProperty("UserSolution")]
+    public virtual ICollection<ProblemDiscussion> ProblemDiscussions { get; set; } = new List<ProblemDiscussion>();
 
     [ForeignKey("UserId")]
     [InverseProperty("UserSolutions")]

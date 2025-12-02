@@ -2,6 +2,6 @@
 {
     public interface IJwtHelper
     {
-        string GenerateToken(long userId, string email);
+        string GenerateToken(long userId, string phone, string subscriptionLevel, DateTime? subscriptionExpiry);
     }
 }

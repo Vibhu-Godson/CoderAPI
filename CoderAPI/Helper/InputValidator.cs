@@ -20,12 +20,12 @@ namespace CoderAPI.Helper
             input = input.Trim();
 
             if (EmailRegex.IsMatch(input))
-                return "Email";
+                return "email";
 
             if (PhoneRegex.IsMatch(input))
-                return "Phone";
+                return "phone";
 
-            return "UserName";
+            return "username";
         }
     }
 }

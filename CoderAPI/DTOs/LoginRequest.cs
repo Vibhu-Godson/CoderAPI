@@ -12,4 +12,13 @@
         public string Message { get; set; }
         public bool Status { get; set; }
     }
+    public class GenerateOtp : StatusResponse
+    {
+        public string Otp { get; set; }
+    }
+    public class ValidateOtp
+    {
+        public string Otp { get; set; }
+        public string Phone { get; set; }
+    }
 }

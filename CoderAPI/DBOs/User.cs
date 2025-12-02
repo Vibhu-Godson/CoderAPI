@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoderAPI.DBOs;
 
-[Index("FacebookId", Name = "UQ__Users__4D656465EFF09EC5", IsUnique = true)]
-[Index("PhoneNumber", Name = "UQ__Users__85FB4E38E5BD99EC", IsUnique = true)]
-[Index("GoogleId", Name = "UQ__Users__A6FBF2FB33310730", IsUnique = true)]
-[Index("Email", Name = "UQ__Users__A9D10534A490BA55", IsUnique = true)]
-[Index("UserName", Name = "UQ__Users__C9F28456EBF038C2", IsUnique = true)]
+[Table("User")]
+[Index("Email", Name = "UQ_Email", IsUnique = true)]
+[Index("PhoneNumber", Name = "UQ_Phone", IsUnique = true)]
+[Index("UserName", Name = "UQ_UserName", IsUnique = true)]
 public partial class User
 {
     [Key]
@@ -61,14 +60,23 @@ public partial class User
     public string UserName { get; set; } = null!;
 
     [InverseProperty("User")]
-    public virtual ICollection<UserNote> UserNotes { get; set; } = new List<UserNote>();
+    public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussionView> ProblemDiscussionViews { get; set; } = new List<ProblemDiscussionView>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussion> ProblemDiscussions { get; set; } = new List<ProblemDiscussion>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserDetail> UserDetails { get; set; } = new List<UserDetail>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserFeedback> UserFeedbacks { get; set; } = new List<UserFeedback>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserProblemSession> UserProblemSessions { get; set; } = new List<UserProblemSession>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserSolution> UserSolutions { get; set; } = new List<UserSolution>();
-
-    [InverseProperty("User")]
-    public virtual ICollection<UserSubTopic> UserSubTopics { get; set; } = new List<UserSubTopic>();
 }

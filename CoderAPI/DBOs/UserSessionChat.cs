@@ -16,19 +16,19 @@ public partial class UserSessionChat
 
     public string ChatMessage { get; set; } = null!;
 
-    [Column(TypeName = "decimal(2, 2)")]
+    [Column(TypeName = "decimal(4, 2)")]
     public decimal? Correctness { get; set; }
 
-    [Column(TypeName = "decimal(2, 2)")]
+    [Column(TypeName = "decimal(4, 2)")]
     public decimal? Completeness { get; set; }
 
-    [Column(TypeName = "decimal(2, 2)")]
+    [Column(TypeName = "decimal(4, 2)")]
     public decimal? Clarity { get; set; }
 
-    [Column(TypeName = "decimal(2, 2)")]
+    [Column(TypeName = "decimal(4, 2)")]
     public decimal? Alignment { get; set; }
 
-    [Column(TypeName = "decimal(2, 2)")]
+    [Column(TypeName = "decimal(4, 2)")]
     public decimal? Readiness { get; set; }
 
     [Column(TypeName = "datetime")]
@@ -48,6 +48,18 @@ public partial class UserSessionChat
 
     [StringLength(50)]
     public string MessageType { get; set; } = null!;
+
+    public string? AiResponse { get; set; }
+
+    [StringLength(900)]
+    public string? AiReply { get; set; }
+
+    [StringLength(1500)]
+    public string? AiExplaination { get; set; }
+
+    public bool IsAfterSubmit { get; set; }
+
+    public long? UserId { get; set; }
 
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSessionChats")]

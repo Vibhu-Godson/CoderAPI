@@ -4,6 +4,7 @@ import Navbar from './common/Navbar';
 
 import LoginPage from './auth/LoginPage';
 import RegisterPage from './auth/RegisterPage';
+import ResetPassword from './auth/pages/ResetPassword';
 import RequireAuth from "./auth/RequireAuth";
 
 import HomePage from './Home/pages/HomePage';
@@ -42,12 +43,13 @@ export default function App() {
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/reset-password" element={<ResetPassword/> }/>
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth />}>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/home" element={<HomePage />} />
+                    <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/plans" element={<PlansPage />} />
                     <Route path="/problems" element={<ProblemsPage />} />
                     <Route path="/problems/:idSlug" element={<ProblemDetailPage />} />

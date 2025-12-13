@@ -2,6 +2,7 @@
 using CoderAPI.Enum;
 using CoderAPI.Helper.Interface;
 using CoderAPI.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoderAPI.Repository.Implementation
 {
@@ -20,6 +21,7 @@ namespace CoderAPI.Repository.Implementation
         {
             try
             {
+                await this.SetAllSessionsInActive(ProblemId, userId);
                 var userProblemSession = new UserProblemSession
                 {
                     ProblemId = ProblemId,
@@ -38,6 +40,34 @@ namespace CoderAPI.Repository.Implementation
             catch(Exception ex)
             {
                 _logger.Log(LogLevel.Error, "DbError: Unable to create user problem session", ex);
+                throw;
+            }
+        }
+        private async Task<bool> SetAllSessionsInActive(long ProblemId, long userId)
+        {
+            var sessions = await _context.UserProblemSessions
+                .Where(ups => ups.UserId == userId && ups.ProblemId == ProblemId)
+                .ToListAsync();
+
+            sessions.ForEach(s => s.IsActive = false);
+            var ok = await _context.SaveChangesAsync();
+            return ok > 0;
+        }
+
+        public async Task<long> GetActiveUserProblemSession(long ProblemId, long userId)
+        {
+            try
+            {
+                var ActiveSessionId = await _context.UserProblemSessions
+                    .Where(ups => ups.IsActive && ups.ProblemId == ProblemId && ups.UserId == userId)
+                    .Select(ups => ups.UserProblemSessionId)
+                    .FirstOrDefaultAsync();
+
+                return ActiveSessionId;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get active user Problem Session for ProblemId: {ProblemId},\n userId: {userId}\n{ex.Message}\n{ex.StackTrace}", ex);
                 throw;
             }
         }

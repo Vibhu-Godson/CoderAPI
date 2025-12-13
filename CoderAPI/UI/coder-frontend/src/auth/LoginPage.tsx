@@ -168,11 +168,15 @@ export default function LoginPage() {
                     <span className="text-xs text-slate-500">or</span>
                     <div className="h-px bg-slate-200 flex-1" />
                 </div>
-
                 <p className="text-center text-sm text-slate-600 mt-6">
+                    Forgot Password? {" "}
+                    <Link to="/reset-password" className="text-[#4F46E5] hover:underline">
+                        Reset Here.
+                    </Link>
+                 <br/>
                     New user?{" "}
                     <Link to="/register" className="text-[#4F46E5] hover:underline">
-                        Create an account
+                        Create an account.
                     </Link>
                 </p>
             </div>

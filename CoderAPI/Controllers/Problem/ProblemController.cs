@@ -95,6 +95,22 @@ namespace CoderAPI.Controllers.Problem
             }
         }
 
+        [HttpPost("ContinueSession")]
+        public async Task<ActionResult<CreateUserSessionResponse>> GetActiveUserSession(long ProblemId)
+        {
+            try
+            {
+                var userId = Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var response = await _problemService.GetActiveUserProblemSession(ProblemId, userId);
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"unable to get Active Session\n{ex.Message}\n{ex.StackTrace}", ex);
+                return StatusCode(500, $"unable to get Active Session\n{ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
         [HttpPost("Promt")]
         public async Task<ActionResult<LLMResponse>> UserSessionChat(LLMAnalysisRequest request)
         {

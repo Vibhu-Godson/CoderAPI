@@ -21,4 +21,8 @@
         public string Otp { get; set; }
         public string Phone { get; set; }
     }
+    public class PasswordResetResponse
+    {
+        public string OldPassword { get; set; }
+    }
 }

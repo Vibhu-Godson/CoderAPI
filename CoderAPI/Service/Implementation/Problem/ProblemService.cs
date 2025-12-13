@@ -37,6 +37,31 @@ namespace CoderAPI.Service.Implementation.Problem
             _problemDetailRepository = problemDetailRepository;
         }
 
+        public async Task<CreateUserSessionResponse> GetActiveUserProblemSession(long ProblemId, long userId)
+        {
+            try
+            {
+                var response = await _userProblemSessionRepository.GetActiveUserProblemSession(ProblemId, userId);
+                return (response >= 0) ?
+                     new CreateUserSessionResponse
+                    {
+                        Status = true,
+                        Message = "Found Active Problem Session",
+                        UserProblemSessionId = response
+                    }:
+                    new CreateUserSessionResponse
+                    {
+                        Status = false,
+                        Message = "Couldn't get Active Problem Session",
+                    };
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: unable to get Active Problem Session for userId: {userId}, ProblemId: {ProblemId}\n{ex.Message}\n{ex.StackTrace}", ex);
+                throw;
+            }
+        }
+
         public async Task<ProblemDto> GetProblemById(long problemId)
         {
             try

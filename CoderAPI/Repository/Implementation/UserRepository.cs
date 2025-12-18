@@ -2,6 +2,7 @@
 using CoderAPI.DTOs;
 using CoderAPI.Helper.Interface;
 using CoderAPI.Repository.Interface;
+using Google.Type;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
@@ -77,6 +78,33 @@ namespace CoderAPI.Repository.Implementation
             }
         }
 
+        public async Task<UserDto?> GetUserByEmail(string email)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null) return null;
+                var userDto = new UserDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Country = user.Country,
+                    LoginPassword = user.LoginPassword,
+                    PhoneNumber = user.PhoneNumber,
+                    ProfileImage = user.ProfileImage,
+                    UserName = user.UserName,
+                    UserId = user.UserId
+                };
+                return userDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get user by email: {email}\n{ex.Message}\n{ex.StackTrace}", ex);
+                throw;
+            }
+        }
+
         public async Task<UserDto> GetUserByEmailAndPassword(string email, string password)
         {
             try
@@ -102,6 +130,33 @@ namespace CoderAPI.Repository.Implementation
             }
         }
 
+        public async Task<UserDto?> GetUserByPhone(string phone)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phone);
+                if (user == null) return null;
+                var userDto = new UserDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Country = user.Country,
+                    LoginPassword = user.LoginPassword,
+                    PhoneNumber = user.PhoneNumber,
+                    ProfileImage = user.ProfileImage,
+                    UserName = user.UserName,
+                    UserId = user.UserId
+                };
+                return userDto;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get user by Phone: {phone}\n{ex.Message}\n{ex.StackTrace}", ex);
+                throw;
+            }
+        }
+
         public async Task<UserDto> GetUserByPhoneAndPassword(string phone, string password)
         {
             try
@@ -123,6 +178,33 @@ namespace CoderAPI.Repository.Implementation
             catch(Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"DbError: unable to get user by phone {phone}", ex);
+                throw;
+            }
+        }
+
+        public async Task<UserDto?> GetUserByUserName(string userName)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+                if (user == null) return null;
+                var userDto = new UserDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Country = user.Country,
+                    LoginPassword = user.LoginPassword,
+                    PhoneNumber = user.PhoneNumber,
+                    ProfileImage = user.ProfileImage,
+                    UserName = user.UserName,
+                    UserId = user.UserId
+                };
+                return userDto;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: unable to get user by userName: {userName}\n{ex.Message}\n{ex.StackTrace}", ex);
                 throw;
             }
         }
@@ -166,7 +248,7 @@ namespace CoderAPI.Repository.Implementation
                     LoginPassword = request.LoginPassword,
                     ProfileImage = request.ProfileImage,
                     Country = request.Country,
-                    CreatedOn = DateTime.UtcNow,
+                    CreatedOn = System.DateTime.UtcNow,
                     CreatedBy = 0,
                     IsActive = true,
                 };
@@ -179,6 +261,30 @@ namespace CoderAPI.Repository.Implementation
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"DbError: unable to register user {request.UserName}", ex);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateUser(UserDto user)
+        {
+            try
+            {
+                var dbUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == user.UserId);
+                if (dbUser == null) return false;
+                dbUser.FirstName = user.FirstName;
+                dbUser.LastName = user.LastName;
+                dbUser.UserName = user.UserName;
+                dbUser.Email = user.Email;
+                dbUser.PhoneNumber = user.PhoneNumber;
+                dbUser.ProfileImage = user.ProfileImage;
+                dbUser.Country = user.Country;
+                dbUser.LoginPassword = user.LoginPassword;
+                var ok = await _context.SaveChangesAsync();
+                return ok > 0;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: Unable to update user with userId: {user.UserId}\n{ex.Message}\n{ex.StackTrace}", ex);
                 throw;
             }
         }

@@ -13,6 +13,10 @@ export const API_URLS = {
         generateOtp: `${BASE_URL}/api/Auth/generateOtp`,
         validateOtp: `${BASE_URL}/api/Auth/validateOtp`,
     },
+    passwordReset: {
+        sendOTP: `${BASE_URL}/api/ResetPassword/sendOTP`,
+        reset: `${BASE_URL}/api/ResetPassword/reset`,
+    },
     postlogin: {
         isOnboarded: `${BASE_URL}/api/UserOnboard/done`,
     },

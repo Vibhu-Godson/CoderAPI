@@ -20,8 +20,9 @@ namespace CoderAPI.Service.Implementation
         private readonly ICustomLogger _logger;
         private readonly IMessageHelper _messageHelper;
         private readonly IWhatsappHelper _whatsappHelper;
+        private readonly IHashingHelper _hashingHelper;
 
-        public AuthService(IJwtHelper jwtHelper, IUserRepository userRepository, ICustomLogger logger, IUserPlanRepository userPlanRepository, IOtpHelper otpGenerate, ISendEmailHelper sendEmailHelper, IMessageHelper messageHelper, IWhatsappHelper whatsappHelper)
+        public AuthService(IJwtHelper jwtHelper, IUserRepository userRepository, ICustomLogger logger, IUserPlanRepository userPlanRepository, IOtpHelper otpGenerate, ISendEmailHelper sendEmailHelper, IMessageHelper messageHelper, IWhatsappHelper whatsappHelper, IHashingHelper hashingHelper)
         {
             _jwtHelper = jwtHelper;
             _userRepository = userRepository;
@@ -31,6 +32,7 @@ namespace CoderAPI.Service.Implementation
             _messageHelper = messageHelper;
             _otpGenerate = otpGenerate;
             _whatsappHelper = whatsappHelper;
+            _hashingHelper = hashingHelper;
         }
 
         public async Task<StatusResponse> CheckUserName(CustomString userName)
@@ -120,13 +122,13 @@ namespace CoderAPI.Service.Implementation
                 switch(InputValidator.DetectInputType(request.UserName))
                 {
                     case "email":
-                        user = await _userRepository.GetUserByEmailAndPassword(request.UserName, request.Password);
+                        user = await _userRepository.GetUserByEmail(request.UserName);
                         break;
                     case "phone":
-                        user = await _userRepository.GetUserByPhoneAndPassword(request.UserName, request.Password);
+                        user = await _userRepository.GetUserByPhone(request.UserName);
                         break;
                     case "username":
-                        user = await _userRepository.GetUserByUserNameAndPassword(request.UserName, request.Password);
+                        user = await _userRepository.GetUserByUserName(request.UserName);
                         break;
                     default:
                         return new LoginResponse
@@ -137,7 +139,7 @@ namespace CoderAPI.Service.Implementation
                             UserName = ""
                         };
                 }
-                if(user == null)
+                if(user == null || !_hashingHelper.Verify(request.Password, user.LoginPassword))
                 {
                     return new LoginResponse
                     {
@@ -168,6 +170,7 @@ namespace CoderAPI.Service.Implementation
         {
             try
             {
+                request.LoginPassword = _hashingHelper.Hash(request.LoginPassword);
                 var response = await _userRepository.RegisterUser(request);
                 return response;
             }

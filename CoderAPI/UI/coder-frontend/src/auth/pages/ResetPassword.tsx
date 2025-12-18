@@ -1,144 +1,203 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Toast } from "../../auth/component/Toast";
 
-const ResetPassword: React.FC = () => {
+import {
+    useSendPasswordResetOtpMutation,
+    useValidateOtpMutation,
+    useResetPasswordMutation
+} from "../authApi";
+
+const ResetPassword = () => {
+    const navigate = useNavigate();
+
+    // Toast state
+    const [toastOpen, setToastOpen] = useState(false);
+    const [toastTitle, setToastTitle] = useState("");
+    const [toastKind, setToastKind] = useState<"success" | "error" | "info">("success");
+
+    const showToast = (
+        title: string,
+        kind: "success" | "error" | "info" = "success"
+    ) => {
+        setToastTitle(title);
+        setToastKind(kind);
+        setToastOpen(true);
+    };
+
+    // Steps: 1 = Enter identifier, 2 = OTP, 3 = New password
     const [step, setStep] = useState<1 | 2 | 3>(1);
-    const [identifier, setIdentifier] = useState("");
+
+    const [value, setValue] = useState(""); // Email or Phone
     const [otp, setOtp] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [loading, setLoading] = useState(false);
 
-    const sendOtp = async () => {
-        setLoading(true);
-        try {
-            await fetch("/auth/send-reset-otp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: identifier, whatsapp: identifier }),
-            });
-            setStep(2);
-        } catch (err) {
-            console.error(err);
-            alert("Failed to send OTP.");
-        }
-        setLoading(false);
-    };
+    // API hooks
+    const [sendOtp, { isLoading: sendingOtp }] = useSendPasswordResetOtpMutation();
+    const [validateOtpFn, { isLoading: validatingOtp }] = useValidateOtpMutation();
+    const [resetPasswordFn, { isLoading: resettingPassword }] = useResetPasswordMutation();
 
-    const verifyOtp = async () => {
-        setLoading(true);
-        try {
-            await fetch("/auth/verify-reset-otp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ identifier, otp }),
-            });
-            setStep(3);
-        } catch (err) {
-            console.error(err);
-            alert("Incorrect OTP.");
-        }
-        setLoading(false);
-    };
-
-    const resetPassword = async () => {
-        if (password !== confirmPassword) {
-            alert("Passwords do not match.");
+    // Step 1: Send OTP
+    const handleSendOtp = async () => {
+        if (!value.trim()) {
+            showToast("Please enter email or WhatsApp number.", "error");
             return;
         }
 
-        setLoading(true);
         try {
-            await fetch("/auth/reset-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ identifier, newPassword: password }),
-            });
-
-            alert("Password changed successfully!");
-            window.location.href = "/login";
-        } catch (err) {
-            console.error(err);
-            alert("Failed to reset password.");
+            const res = await sendOtp({ value }).unwrap();
+            if (res.status) {
+                showToast("OTP sent successfully!", "success");
+                setStep(2);
+            } else {
+                showToast(res.message, "error");
+            }
+        } catch (err: any) {
+            showToast(err?.data?.message || "Failed to send OTP.", "error");
         }
-        setLoading(false);
+    };
+
+    // Step 2: Validate OTP
+    const handleValidateOtp = async () => {
+        if (!otp.trim()) {
+            showToast("Enter the OTP.", "error");
+            return;
+        }
+
+        try {
+            const res = await validateOtpFn({
+                otp,
+                phone: value
+            }).unwrap();
+
+            if (res.status) {
+                showToast("OTP verified!", "success");
+                setStep(3);
+            } else {
+                showToast(res.message, "error");
+            }
+        } catch (err: any) {
+            showToast(err?.data?.message || "OTP verification failed.", "error");
+        }
+    };
+
+    // Step 3: Reset Password
+    const handleResetPassword = async () => {
+        if (!password || !confirmPassword) {
+            showToast("Both password fields are required.", "error");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showToast("Passwords do not match.", "error");
+            return;
+        }
+
+        try {
+            const res = await resetPasswordFn({
+                userName: value,
+                password: password,
+            }).unwrap();
+
+            if (res.status) {
+                showToast("Password updated! Please log in.", "success");
+                navigate("/login");
+            } else {
+                showToast(res.message, "error");
+            }
+        } catch (err: any) {
+            showToast(err?.data?.message || "Password reset failed.", "error");
+        }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-md">
-                <h2 className="text-2xl font-semibold text-center mb-6">
-                    Reset Password
-                </h2>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md transition-all">
 
-                {/* Step 1 - Enter Email / WhatsApp */}
+                <h1 className="text-2xl font-semibold text-center mb-6">
+                    Reset Password
+                </h1>
+
+                {/* STEP 1 */}
                 {step === 1 && (
-                    <>
+                    <div className="space-y-4">
                         <input
                             type="text"
-                            placeholder="Email or WhatsApp"
-                            className="w-full p-3 border rounded-lg mb-4"
-                            value={identifier}
-                            onChange={(e) => setIdentifier(e.target.value)}
+                            placeholder="Enter Email or WhatsApp Number"
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
+
                         <button
-                            onClick={sendOtp}
-                            disabled={loading}
-                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+                            onClick={handleSendOtp}
+                            disabled={sendingOtp}
+                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
                         >
-                            {loading ? "Sending..." : "Send OTP"}
+                            {sendingOtp ? "Sending OTP..." : "Send OTP"}
                         </button>
-                    </>
+                    </div>
                 )}
 
-                {/* Step 2 - Verify OTP */}
+                {/* STEP 2 */}
                 {step === 2 && (
-                    <>
+                    <div className="space-y-4">
                         <input
                             type="text"
                             placeholder="Enter OTP"
-                            className="w-full p-3 border rounded-lg mb-4"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
+                            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
+
                         <button
-                            onClick={verifyOtp}
-                            disabled={loading}
-                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+                            onClick={handleValidateOtp}
+                            disabled={validatingOtp}
+                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
                         >
-                            {loading ? "Verifying..." : "Verify OTP"}
+                            {validatingOtp ? "Validating..." : "Verify OTP"}
                         </button>
-                    </>
+                    </div>
                 )}
 
-                {/* Step 3 - Create New Password */}
+                {/* STEP 3 */}
                 {step === 3 && (
-                    <>
+                    <div className="space-y-4">
                         <input
                             type="password"
                             placeholder="New Password"
-                            className="w-full p-3 border rounded-lg mb-4"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
 
                         <input
                             type="password"
-                            placeholder="Confirm Password"
-                            className="w-full p-3 border rounded-lg mb-4"
+                            placeholder="Confirm New Password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
 
                         <button
-                            onClick={resetPassword}
-                            disabled={loading}
-                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+                            onClick={handleResetPassword}
+                            disabled={resettingPassword}
+                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
                         >
-                            {loading ? "Saving..." : "Update Password"}
+                            {resettingPassword ? "Updating..." : "Update Password"}
                         </button>
-                    </>
+                    </div>
                 )}
             </div>
+
+            {/* Toast Component */}
+            <Toast
+                open={toastOpen}
+                onClose={() => setToastOpen(false)}
+                title={toastTitle}
+                kind={toastKind}
+            />
         </div>
     );
 };

@@ -18,6 +18,7 @@ namespace CoderAPI.Controllers.Users
             _logger = logger;
         }
 
+        [HttpPost("sendOTP")]
         public async Task<ActionResult<StatusResponse>> SendPasswordResetOtp(CustomString email)
         {
             try
@@ -32,6 +33,25 @@ namespace CoderAPI.Controllers.Users
                 {
                     Status = false,
                     Message = $"Unable to send Password reset OTP to {email.Value}"
+                });
+            }
+        }
+
+        [HttpPost("reset")]
+        public async Task<ActionResult<StatusResponse>> ResetPassword(LoginRequest newPassword)
+        {
+            try
+            {
+                var response = await _resetPasswordService.ResetPassword(newPassword);
+                return Ok(response);
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"Unable to reset password for {newPassword.UserName}\n{ex.Message}\n{ex.StackTrace}", ex);
+                return StatusCode(500, new StatusResponse
+                {
+                    Status = false,
+                    Message = $"Unable to reset password for {newPassword.UserName}"
                 });
             }
         }

@@ -15,8 +15,9 @@ namespace CoderAPI.Service.Implementation.User
         private readonly ISendEmailHelper _sendEmailHelper;
         private readonly IWhatsappHelper _whatsappHelper;
         private readonly IMessageHelper _messageHelper;
+        private readonly IHashingHelper _hashingHelper;
 
-        public ResetPasswordService(IUserRepository userRepository, ICustomLogger logger, IOtpHelper otpHelper, ISendEmailHelper sendEmailHelper, IWhatsappHelper whisappHelper, IMessageHelper messageHelper)
+        public ResetPasswordService(IUserRepository userRepository, ICustomLogger logger, IOtpHelper otpHelper, ISendEmailHelper sendEmailHelper, IWhatsappHelper whisappHelper, IMessageHelper messageHelper, IHashingHelper hashingHelper)
         {
             _userRepository = userRepository;
             _logger = logger;
@@ -24,6 +25,46 @@ namespace CoderAPI.Service.Implementation.User
             _sendEmailHelper = sendEmailHelper;
             _whatsappHelper = whisappHelper;
             _messageHelper = messageHelper;
+            _hashingHelper = hashingHelper;
+        }
+
+        public async Task<StatusResponse> ResetPassword(LoginRequest newPassword)
+        {
+            try
+            {
+                var contactType = InputValidator.DetectInputType(newPassword.UserName);
+                var user = contactType switch
+                {
+                    "email" => await _userRepository.GetUserByEmail(newPassword.UserName),
+                    "phone" => await _userRepository.GetUserByPhone(newPassword.UserName),
+                    _ => null
+                };
+                if (user == null) return new StatusResponse
+                {
+                    Status = false,
+                    Message = "Unable to reset Password"
+                };
+                if(_hashingHelper.Verify(newPassword.Password, user.LoginPassword))
+                {
+                    return new StatusResponse
+                    {
+                        Status = false,
+                        Message = $"new password can't be same as old"
+                    };
+                }
+                user.LoginPassword = _hashingHelper.Hash(newPassword.Password);
+                var IsUpdated = await _userRepository.UpdateUser(user);
+                return new StatusResponse
+                {
+                    Status = IsUpdated,
+                    Message = IsUpdated ? "Password Reset Successfully.!" : "Password Reset Failed..!",
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"ServerError: Unable to reset password ", ex);
+                throw;
+            }
         }
 
         public async Task<StatusResponse> SendPasswordResetOtp(CustomString email)

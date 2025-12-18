@@ -47,5 +47,8 @@ namespace CoderAPI.Messages
 
         [JsonPropertyName("alignment")]
         public double Alignment { get; set; }
+        
+        [JsonPropertyName("depthOfUnderstanding")]
+        public double DepthOfUnderstanding { get; set; }
     }
 }

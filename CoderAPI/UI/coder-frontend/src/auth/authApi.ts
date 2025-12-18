@@ -67,6 +67,22 @@ export const authApi = baseApi.injectEndpoints({
             }),
         }),
 
+        sendPasswordResetOtp: builder.mutation<{ status: boolean, message: string }, { value: string }>({
+            query: (body) => ({
+                url: API_URLS.passwordReset.sendOTP,
+                method: "POST",
+                body
+            }),
+        }),
+
+        resetPassword: builder.mutation<{ status: boolean, message: string }, LoginRequest>({
+            query: (body) => ({
+                url: API_URLS.passwordReset.reset,
+                method: "POST",
+                body
+            }),
+        }),
+
         validateOtp: builder.mutation<{ status: boolean, message: string }, { otp: string, phone: string }>({
             query: (body) => ({
                 url: API_URLS.auth.validateOtp,
@@ -94,7 +110,9 @@ export const { useLoginMutation,
     useRegisterMutation,
     useCheckUserNameMutation,
     useGenerateOtpMutation,
+    useSendPasswordResetOtpMutation,
     useValidateOtpMutation,
     useUserOnboardDoneQuery,
     useLazyUserOnboardDoneQuery,
+    useResetPasswordMutation
 } = authApi;

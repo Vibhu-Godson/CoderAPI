@@ -60,7 +60,28 @@ public partial class User
     public string UserName { get; set; } = null!;
 
     [InverseProperty("User")]
+    public virtual ICollection<EventParticipant> EventParticipants { get; set; } = new List<EventParticipant>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<PostComment> PostComments { get; set; } = new List<PostComment>();
+
+    [InverseProperty("MentionedByUser")]
+    public virtual ICollection<PostMention> PostMentionMentionedByUsers { get; set; } = new List<PostMention>();
+
+    [InverseProperty("MentionedUser")]
+    public virtual ICollection<PostMention> PostMentionMentionedUsers { get; set; } = new List<PostMention>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<PostReaction> PostReactions { get; set; } = new List<PostReaction>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+
+    [InverseProperty("User")]
     public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<ProblemDiscussionTag> ProblemDiscussionTags { get; set; } = new List<ProblemDiscussionTag>();
 
     [InverseProperty("User")]
     public virtual ICollection<ProblemDiscussionView> ProblemDiscussionViews { get; set; } = new List<ProblemDiscussionView>();
@@ -69,10 +90,22 @@ public partial class User
     public virtual ICollection<ProblemDiscussion> ProblemDiscussions { get; set; } = new List<ProblemDiscussion>();
 
     [InverseProperty("User")]
+    public virtual ICollection<TribeActivity> TribeActivities { get; set; } = new List<TribeActivity>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<TribeMember> TribeMembers { get; set; } = new List<TribeMember>();
+
+    [InverseProperty("OwnerUser")]
+    public virtual ICollection<Tribe> Tribes { get; set; } = new List<Tribe>();
+
+    [InverseProperty("User")]
     public virtual ICollection<UserDetail> UserDetails { get; set; } = new List<UserDetail>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserFeedback> UserFeedbacks { get; set; } = new List<UserFeedback>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserPostConsumption> UserPostConsumptions { get; set; } = new List<UserPostConsumption>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserProblemSession> UserProblemSessions { get; set; } = new List<UserProblemSession>();

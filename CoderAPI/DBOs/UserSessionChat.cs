@@ -61,6 +61,9 @@ public partial class UserSessionChat
 
     public long? UserId { get; set; }
 
+    [Column(TypeName = "decimal(4, 2)")]
+    public decimal? DepthOfUnderstanding { get; set; }
+
     [ForeignKey("UserProblemSessionId")]
     [InverseProperty("UserSessionChats")]
     public virtual UserProblemSession UserProblemSession { get; set; } = null!;

@@ -36,6 +36,14 @@ public partial class ProblemDiscussion
 
     public bool IsActive { get; set; }
 
+    [StringLength(500)]
+    public string DiscussionTitle { get; set; } = null!;
+
+    [StringLength(1000)]
+    public string? ShortDiscussionText { get; set; }
+
+    public string? LongDiscussionText { get; set; }
+
     [InverseProperty("ParentDiscussion")]
     public virtual ICollection<ProblemDiscussion> InverseParentDiscussion { get; set; } = new List<ProblemDiscussion>();
 
@@ -44,10 +52,10 @@ public partial class ProblemDiscussion
     public virtual ProblemDiscussion? ParentDiscussion { get; set; }
 
     [InverseProperty("ProblemDiscussion")]
-    public virtual ICollection<ProblemDiscussionBlock> ProblemDiscussionBlocks { get; set; } = new List<ProblemDiscussionBlock>();
+    public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
 
     [InverseProperty("ProblemDiscussion")]
-    public virtual ICollection<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; } = new List<ProblemDiscussionReaction>();
+    public virtual ICollection<ProblemDiscussionTag> ProblemDiscussionTags { get; set; } = new List<ProblemDiscussionTag>();
 
     [InverseProperty("ProblemDiscussion")]
     public virtual ICollection<ProblemDiscussionView> ProblemDiscussionViews { get; set; } = new List<ProblemDiscussionView>();

@@ -27,11 +27,33 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<CourseTopic> CourseTopics { get; set; }
 
+    public virtual DbSet<EventParticipant> EventParticipants { get; set; }
+
     public virtual DbSet<Feature> Features { get; set; }
+
+    public virtual DbSet<Hashtag> Hashtags { get; set; }
+
+    public virtual DbSet<MediaType> MediaTypes { get; set; }
+
+    public virtual DbSet<OrgMember> OrgMembers { get; set; }
+
+    public virtual DbSet<Organization> Organizations { get; set; }
 
     public virtual DbSet<PlanFeature> PlanFeatures { get; set; }
 
     public virtual DbSet<Plann> Planns { get; set; }
+
+    public virtual DbSet<Post> Posts { get; set; }
+
+    public virtual DbSet<PostComment> PostComments { get; set; }
+
+    public virtual DbSet<PostHashtag> PostHashtags { get; set; }
+
+    public virtual DbSet<PostMedium> PostMedia { get; set; }
+
+    public virtual DbSet<PostMention> PostMentions { get; set; }
+
+    public virtual DbSet<PostReaction> PostReactions { get; set; }
 
     public virtual DbSet<Problem> Problems { get; set; }
 
@@ -39,9 +61,9 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<ProblemDiscussion> ProblemDiscussions { get; set; }
 
-    public virtual DbSet<ProblemDiscussionBlock> ProblemDiscussionBlocks { get; set; }
-
     public virtual DbSet<ProblemDiscussionReaction> ProblemDiscussionReactions { get; set; }
+
+    public virtual DbSet<ProblemDiscussionTag> ProblemDiscussionTags { get; set; }
 
     public virtual DbSet<ProblemDiscussionView> ProblemDiscussionViews { get; set; }
 
@@ -59,6 +81,22 @@ public partial class CodeDbContext : DbContext
 
     public virtual DbSet<TopicAsset> TopicAssets { get; set; }
 
+    public virtual DbSet<Tribe> Tribes { get; set; }
+
+    public virtual DbSet<TribeActivity> TribeActivities { get; set; }
+
+    public virtual DbSet<TribeActivityEntityMaster> TribeActivityEntityMasters { get; set; }
+
+    public virtual DbSet<TribeGoalMap> TribeGoalMaps { get; set; }
+
+    public virtual DbSet<TribeGoalMaster> TribeGoalMasters { get; set; }
+
+    public virtual DbSet<TribeMember> TribeMembers { get; set; }
+
+    public virtual DbSet<TribeMemberRoleMaster> TribeMemberRoleMasters { get; set; }
+
+    public virtual DbSet<TribeRoleResponsibilityMaster> TribeRoleResponsibilityMasters { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserBoard> UserBoards { get; set; }
@@ -70,6 +108,8 @@ public partial class CodeDbContext : DbContext
     public virtual DbSet<UserFeedback> UserFeedbacks { get; set; }
 
     public virtual DbSet<UserPlan> UserPlans { get; set; }
+
+    public virtual DbSet<UserPostConsumption> UserPostConsumptions { get; set; }
 
     public virtual DbSet<UserProblemSession> UserProblemSessions { get; set; }
 
@@ -84,6 +124,14 @@ public partial class CodeDbContext : DbContext
     public virtual DbSet<UserTopic> UserTopics { get; set; }
 
     public virtual DbSet<UserTopicAsset> UserTopicAssets { get; set; }
+
+    public virtual DbSet<Workshop> Workshops { get; set; }
+
+    public virtual DbSet<WorkshopEvent> WorkshopEvents { get; set; }
+
+    public virtual DbSet<WorkshopGoalMap> WorkshopGoalMaps { get; set; }
+
+    public virtual DbSet<WorkshopGoalMaster> WorkshopGoalMasters { get; set; }
 
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -155,12 +203,47 @@ public partial class CodeDbContext : DbContext
                 .HasConstraintName("FK__CourseTop__Topic__787EE5A0");
         });
 
+        modelBuilder.Entity<EventParticipant>(entity =>
+        {
+            entity.HasKey(e => e.EventParticipantId).HasName("PK__EventPar__09F32B92590A1557");
+
+            entity.HasOne(d => d.Tribe).WithMany(p => p.EventParticipants).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User).WithMany(p => p.EventParticipants)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EventParticipant_Users_UserId");
+
+            entity.HasOne(d => d.WorkshopEvent).WithMany(p => p.EventParticipants).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<Feature>(entity =>
         {
             entity.HasKey(e => e.FeatureId).HasName("PK__Feature__82230BC9342B82C9");
 
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<Hashtag>(entity =>
+        {
+            entity.HasKey(e => e.HashtagId).HasName("PK__Hashtag__BEFA912A195E2C9C");
+        });
+
+        modelBuilder.Entity<MediaType>(entity =>
+        {
+            entity.HasKey(e => e.MediaTypeId).HasName("PK__MediaTyp__0E6FCB7279C5D440");
+        });
+
+        modelBuilder.Entity<OrgMember>(entity =>
+        {
+            entity.HasKey(e => e.OrgMemberId).HasName("PK__OrgMembe__4F847F0BA8167483");
+
+            entity.HasOne(d => d.Organization).WithMany(p => p.OrgMembers).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<Organization>(entity =>
+        {
+            entity.HasKey(e => e.OrganizationId).HasName("PK__Organiza__CADB0B12A5A98D09");
         });
 
         modelBuilder.Entity<PlanFeature>(entity =>
@@ -185,6 +268,70 @@ public partial class CodeDbContext : DbContext
 
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasKey(e => e.PostId).HasName("PK__Post__AA126018F48C22B6");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Posts)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Post_Users_UserId");
+        });
+
+        modelBuilder.Entity<PostComment>(entity =>
+        {
+            entity.HasKey(e => e.PostCommentId).HasName("PK__PostComm__A955AFED072D6F63");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.PostComments).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User).WithMany(p => p.PostComments)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PostComment_Users_UserId");
+        });
+
+        modelBuilder.Entity<PostHashtag>(entity =>
+        {
+            entity.HasKey(e => e.PostHashtagId).HasName("PK__PostHash__A68E12D14CE95E40");
+
+            entity.HasOne(d => d.Hashtag).WithMany(p => p.PostHashtags).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Post).WithMany(p => p.PostHashtags).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<PostMedium>(entity =>
+        {
+            entity.HasKey(e => e.PostMediaId).HasName("PK__PostMedi__75C231348F553D3F");
+
+            entity.HasOne(d => d.MediaType).WithMany(p => p.PostMedia).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Post).WithMany(p => p.PostMedia).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<PostMention>(entity =>
+        {
+            entity.HasKey(e => e.PostMentionId).HasName("PK__PostMent__D67CFA3D7FF52B7D");
+
+            entity.HasOne(d => d.MentionedByUser).WithMany(p => p.PostMentionMentionedByUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PostMention_Users_MentionedByUserId");
+
+            entity.HasOne(d => d.MentionedUser).WithMany(p => p.PostMentionMentionedUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PostMention_Users_MentionedUserId");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.PostMentions).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<PostReaction>(entity =>
+        {
+            entity.HasKey(e => e.PostReactionId).HasName("PK__PostReac__CD046ABB63CB3740");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.PostReactions).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User).WithMany(p => p.PostReactions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PostReaction_Users_UserId");
         });
 
         modelBuilder.Entity<Problem>(entity =>
@@ -212,6 +359,7 @@ public partial class CodeDbContext : DbContext
             entity.HasKey(e => e.ProblemDiscussionId).HasName("PK__ProblemD__2439338D175E96DB");
 
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.DiscussionTitle).HasDefaultValue("");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
             entity.HasOne(d => d.ParentDiscussion).WithMany(p => p.InverseParentDiscussion).HasConstraintName("FK_ProblemDiscussion_Parent");
@@ -223,18 +371,6 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.UserProblemSession).WithMany(p => p.ProblemDiscussions).HasConstraintName("FK_ProblemDiscussion_UserProblemSession");
 
             entity.HasOne(d => d.UserSolution).WithMany(p => p.ProblemDiscussions).HasConstraintName("FK_ProblemDiscussion_UserSolution");
-        });
-
-        modelBuilder.Entity<ProblemDiscussionBlock>(entity =>
-        {
-            entity.HasKey(e => e.BlockId).HasName("PK__ProblemD__144215F1726523B5");
-
-            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-
-            entity.HasOne(d => d.ProblemDiscussion).WithMany(p => p.ProblemDiscussionBlocks)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DiscussionBlock_ProblemDiscussion");
         });
 
         modelBuilder.Entity<ProblemDiscussionReaction>(entity =>
@@ -251,6 +387,19 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussionReactions)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Reaction_User");
+        });
+
+        modelBuilder.Entity<ProblemDiscussionTag>(entity =>
+        {
+            entity.HasKey(e => e.ProblemDiscussionTagId).HasName("PK__ProblemD__04DD4AFBE6999DE1");
+
+            entity.HasOne(d => d.ProblemDiscussion).WithMany(p => p.ProblemDiscussionTags)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProblemDi__Probl__3DE82FB7");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ProblemDiscussionTags)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProblemDi__UserI__3CF40B7E");
         });
 
         modelBuilder.Entity<ProblemDiscussionView>(entity =>
@@ -331,6 +480,72 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Topic).WithMany(p => p.TopicAssets).HasConstraintName("FK__TopicAsse__Topic__31B762FC");
         });
 
+        modelBuilder.Entity<Tribe>(entity =>
+        {
+            entity.HasKey(e => e.TribeId).HasName("PK__Tribe__FE5FA43B7EF53A6B");
+
+            entity.HasOne(d => d.OwnerUser).WithMany(p => p.Tribes)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Tribe_Users_OwnerUserId");
+        });
+
+        modelBuilder.Entity<TribeActivity>(entity =>
+        {
+            entity.HasKey(e => e.TribeActivityId).HasName("PK__TribeAct__5164AB4226DB14D5");
+
+            entity.HasOne(d => d.TribeActivityEntityMaster).WithMany(p => p.TribeActivities).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Tribe).WithMany(p => p.TribeActivities).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User).WithMany(p => p.TribeActivities)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TribeActivity_Users_UserId");
+        });
+
+        modelBuilder.Entity<TribeActivityEntityMaster>(entity =>
+        {
+            entity.HasKey(e => e.TribeActivityEntityMasterId).HasName("PK__TribeAct__5D659893F1BB0BDD");
+        });
+
+        modelBuilder.Entity<TribeGoalMap>(entity =>
+        {
+            entity.HasKey(e => e.TribeGoalMapId).HasName("PK__TribeGoa__AE5A07AF116A76E2");
+
+            entity.HasOne(d => d.TribeGoalMaster).WithMany(p => p.TribeGoalMaps).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Tribe).WithMany(p => p.TribeGoalMaps).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<TribeGoalMaster>(entity =>
+        {
+            entity.HasKey(e => e.TribeGoalMasterId).HasName("PK__TribeGoa__6ED81FE75D9043C6");
+        });
+
+        modelBuilder.Entity<TribeMember>(entity =>
+        {
+            entity.HasKey(e => e.TribeMemberId).HasName("PK__TribeMem__F3BF6C02A7032430");
+
+            entity.HasOne(d => d.Tribe).WithMany(p => p.TribeMembers).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.TribeMemberRoleMaster).WithMany(p => p.TribeMembers).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User).WithMany(p => p.TribeMembers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TribeMember_Users_UserId");
+        });
+
+        modelBuilder.Entity<TribeMemberRoleMaster>(entity =>
+        {
+            entity.HasKey(e => e.TribeMemberRoleMasterId).HasName("PK__TribeMem__E8F7C83047995CE7");
+        });
+
+        modelBuilder.Entity<TribeRoleResponsibilityMaster>(entity =>
+        {
+            entity.HasKey(e => e.TribeRoleResponsibilityMasterId).HasName("PK__TribeRol__8C9ED0FB43B9D3E8");
+
+            entity.HasOne(d => d.TribeMemberRoleMaster).WithMany(p => p.TribeRoleResponsibilityMasters).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C4B32AD15");
@@ -397,6 +612,17 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.Plan).WithMany(p => p.UserPlans)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserPlan__PlanId__1EA48E88");
+        });
+
+        modelBuilder.Entity<UserPostConsumption>(entity =>
+        {
+            entity.HasKey(e => e.UserPostConsumptionId).HasName("PK__UserPost__4389F92E53EDF4CB");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.UserPostConsumptions).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserPostConsumptions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserPostConsumption_Users_UserId");
         });
 
         modelBuilder.Entity<UserProblemSession>(entity =>
@@ -508,6 +734,34 @@ public partial class CodeDbContext : DbContext
             entity.HasOne(d => d.UserTopic).WithMany(p => p.UserTopicAssets)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserTopicAsset_UserTopic");
+        });
+
+        modelBuilder.Entity<Workshop>(entity =>
+        {
+            entity.HasKey(e => e.WorkshopId).HasName("PK__Workshop__7A008C0A14DEBAC8");
+
+            entity.HasOne(d => d.OrganizedBy).WithMany(p => p.WorkshopOrganizedBies).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<WorkshopEvent>(entity =>
+        {
+            entity.HasKey(e => e.WorkshopEventId).HasName("PK__Workshop__62FC654EB20B80D8");
+
+            entity.HasOne(d => d.Workshop).WithMany(p => p.WorkshopEvents).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<WorkshopGoalMap>(entity =>
+        {
+            entity.HasKey(e => e.WorkshopGoalMapId).HasName("PK__Workshop__36AD21E00B9FC15A");
+
+            entity.HasOne(d => d.WorkshopGoalMaster).WithMany(p => p.WorkshopGoalMaps).OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Workshop).WithMany(p => p.WorkshopGoalMaps).OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<WorkshopGoalMaster>(entity =>
+        {
+            entity.HasKey(e => e.WorkshopGoalMasterId).HasName("PK__Workshop__5A08F92629F7FCF1");
         });
 
         OnModelCreatingPartial(modelBuilder);

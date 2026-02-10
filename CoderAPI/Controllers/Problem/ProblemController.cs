@@ -11,7 +11,7 @@ namespace CoderAPI.Controllers.Problem
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
     public class ProblemController : ControllerBase
     {
         private readonly IProblemService _problemService;
@@ -48,7 +48,8 @@ namespace CoderAPI.Controllers.Problem
         {
             try
             {
-                var response = await _problemService.GetProblemById(ProblemId);
+                var userId = Convert.ToInt64(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var response = await _problemService.GetProblemById(ProblemId, userId);
                 if(response.IsLocked && !_subscriptionHelper.isPremiumUser(User))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, new

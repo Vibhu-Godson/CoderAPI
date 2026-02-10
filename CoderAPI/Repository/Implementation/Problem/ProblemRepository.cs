@@ -42,12 +42,16 @@ namespace CoderAPI.Repository.Implementation.Problem
             }
         }
 
-        public async Task<ProblemDto> GetProblemById(long ProblemId)
+        public async Task<ProblemDto> GetProblemById(long ProblemId, long userId)
         {
             try
             {
                 var problem = await _context.Problems.FindAsync(ProblemId);
                 if (problem == null) return new ProblemDto();
+                var userInfo = await _context.UserProblemSessions
+                                    .Where(ups => userId > 0 && ups.UserId == userId && ups.ProblemId == ProblemId && ups.SessionStatus != SessionStatus.Completed.ToString())
+                                    .Select(ups => new {ups.UserProblemSessionId, ups.SessionStatus})
+                                    .FirstOrDefaultAsync();
                 var response =  new ProblemDto
                 {
                     ProblemId = problem.ProblemId,
@@ -75,7 +79,9 @@ namespace CoderAPI.Repository.Implementation.Problem
                             ExpectedOutput = tc.ExpectedOutput,
                             Explaination = ""
                         })
-                        .ToList()
+                        .ToList(),
+                    LastIncompleteSessionId = userInfo!= null &&  userInfo.SessionStatus != SessionStatus.Completed.ToString() ? userInfo.UserProblemSessionId: 0,
+                    UserStatus = userInfo != null ? userInfo.SessionStatus : ProblemStatus.NotAttempted.ToString(),
                 };
                 return response;
             }

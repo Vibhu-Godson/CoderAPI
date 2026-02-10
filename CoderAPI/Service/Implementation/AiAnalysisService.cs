@@ -37,7 +37,7 @@ namespace CoderAPI.Service.Implementation
         {
             try
             {
-                var problem = await _problemRepository.GetProblemById(request.ProblemId);
+                var problem = await _problemRepository.GetProblemById(request.ProblemId, 0);
                 var edgeCases = await _problemRepository.GetEdgeCasesByProblemId(request.ProblemId);
                 var previousChat = await _userSessionChatRepository.GetSessionChat(request.UserProblemSessionId);
                 var userSolution = request.UserSolutionId>0 ? await _userSolutionRepository.GetCodeByUserSolutionId(request.UserSolutionId): "";

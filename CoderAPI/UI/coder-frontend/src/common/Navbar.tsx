@@ -8,7 +8,9 @@ import {
     Grid,
     BookOpen,
     Users,
-    IndianRupee
+    IndianRupee,
+    Menu,
+    X
 } from "lucide-react"; // ✅ No TS errors
 
 function getInitials(name?: string | null) {
@@ -31,10 +33,11 @@ export default function Navbar() {
 
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const hidePaths = useMemo(
-        () => ["/login", "/signup", "/register", "/auth/callback"],
-        []
-    );
+    // ✅ Close dropdown when authentication state changes
+    useEffect(() => {
+        setDropdownOpen(false);
+        setIsMenuOpen(false);
+    }, [isAuthenticated]);
 
     useEffect(() => {
         const clickOutside = (e: any) => {
@@ -46,7 +49,10 @@ export default function Navbar() {
         return () => document.removeEventListener("mousedown", clickOutside);
     }, []);
 
-    if (!isAuthenticated || hidePaths.includes(location.pathname)) return null;
+    // Hide navbar on auth pages
+    if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/reset-password") {
+        return null;
+    }
 
     const navClass = ({ isActive }: any) =>
         `px-3 py-2 rounded-lg transition font-medium ${isActive ? "text-indigo-600" : "text-slate-700"
@@ -102,28 +108,37 @@ export default function Navbar() {
                     </NavLink>
                 </div>
 
-                {/* Avatar dropdown */}
-                <div className="relative" ref={dropdownRef}>
-                    <button
-                        className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl hover:bg-slate-200 transition"
-                        onClick={() => setDropdownOpen((v) => !v)}
-                    >
-                        {avatar ? (
-                            <img
-                                src={`data:image/*;base64,${avatar}`}
-                                className="w-8 h-8 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white grid place-items-center font-semibold">
-                                {getInitials(userName)}
-                            </div>
-                        )}
+                {/* Mobile menu button */}
+                <button
+                    className="md:hidden flex items-center"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
 
-                        <span className="font-medium text-slate-700">{userName}</span>
-                    </button>
+                {/* Avatar dropdown / Login button */}
+                {isAuthenticated ? (
+                    <div className="hidden md:block relative" ref={dropdownRef}>
+                        <button
+                            className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl hover:bg-slate-200 transition"
+                            onClick={() => setDropdownOpen((v) => !v)}
+                        >
+                            {avatar ? (
+                                <img
+                                    src={`data:image/*;base64,${avatar}`}
+                                    className="w-8 h-8 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white grid place-items-center font-semibold">
+                                    {getInitials(userName)}
+                                </div>
+                            )}
 
-                    {dropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl border rounded-xl overflow-hidden">
+                            <span className="font-medium text-slate-700">{userName}</span>
+                        </button>
+
+                        {dropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl border rounded-xl overflow-hidden">
                             <Link to={`/profile/${userName}`} className="block px-4 py-3 hover:bg-slate-100">
                                 Profile
                             </Link>
@@ -144,10 +159,76 @@ export default function Navbar() {
                                 Logout
                             </button>
                         </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                ) : (
+                    <Link
+                        to="/login"
+                        className="hidden md:inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
+                    >
+                        Login
+                    </Link>
+                )}
 
             </div>
+
+            {/* Mobile menu */}
+            {isMenuOpen && (
+                <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur">
+                    <div className="flex flex-col space-y-1 px-4 py-2">
+                        <NavLink to="/" className={({ isActive }) => `block px-3 py-2 rounded-lg transition font-medium ${isActive ? "text-indigo-600 bg-indigo-50" : "text-slate-700"} hover:text-indigo-600`}>
+                            <div className="flex items-center gap-1">
+                                <Home size={18} /> Home
+                            </div>
+                        </NavLink>
+
+                        <NavLink to="/problems" className={({ isActive }) => `block px-3 py-2 rounded-lg transition font-medium ${isActive ? "text-indigo-600 bg-indigo-50" : "text-slate-700"} hover:text-indigo-600`}>
+                            <div className="flex items-center gap-1">
+                                <Grid size={18} /> Problems
+                            </div>
+                        </NavLink>
+
+                        <NavLink to="/plans" className={({ isActive }) => `block px-3 py-2 rounded-lg transition font-medium ${isActive ? "text-indigo-600 bg-indigo-50" : "text-slate-700"} hover:text-indigo-600`}>
+                            <div className="flex items-center gap-1">
+                                <IndianRupee size={18} /> Plans
+                            </div>
+                        </NavLink>
+
+                        {/* Mobile user menu */}
+                        {isAuthenticated ? (
+                        <div className="border-t border-slate-200 pt-2 mt-2">
+                            <Link to={`/profile/${userName}`} className="block px-3 py-2 rounded-lg hover:bg-slate-100">
+                                Profile
+                            </Link>
+                            <Link to="/settings" className="block px-3 py-2 rounded-lg hover:bg-slate-100">
+                                Settings
+                            </Link>
+                            <Link to="/feedback" className="block px-3 py-2 rounded-lg hover:bg-slate-100">
+                                Feedback
+                            </Link>
+                            <Link to="/contact-us" className="block px-3 py-2 rounded-lg hover:bg-slate-100">
+                                Contact Us
+                            </Link>
+                            
+                            <button
+                                onClick={() => {
+                                    handleLogout();
+                                    setIsMenuOpen(false);
+                                }}
+                                className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                                Logout
+                            </button>
+                        </div>                        ) : (
+                        <Link
+                            to="/login"
+                            className="block px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium text-center mt-2"
+                        >
+                            Login
+                        </Link>
+                        )}                    </div>
+                </div>
+            )}
         </nav>
     );
 }

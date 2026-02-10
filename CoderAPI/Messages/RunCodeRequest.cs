@@ -1,4 +1,7 @@
-﻿namespace CoderAPI.Messages
+﻿using CoderAPI.DTOs;
+using CoderAPI.DTOs.TestCase;
+
+namespace CoderAPI.Messages
 {
     public class RunCodeRequest
     {
@@ -8,5 +11,6 @@
         public string Code { get; set; }
         public string Language { get; set; }
         public bool IsSubmit { get; set; }// if true run against all (hidden) testcases; else sample tests
+        public ListDto<TestCaseDto>? Testcases { get; set; }
     }
 }

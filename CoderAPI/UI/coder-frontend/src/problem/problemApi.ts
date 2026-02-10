@@ -93,7 +93,23 @@ export const problemApi = baseApi.injectEndpoints({
         }),
 
         runOrSubmitSolution: builder.mutation<
-            { status: boolean; message: string; userSolutionId : number },
+            { 
+                status: boolean; 
+                message: string; 
+                userSolutionId : number;
+                testCaseResults?: Array<{
+                    userTestCaseResultId: number;
+                    testCaseId: number;
+                    input: string;
+                    expectedOutput: string;
+                    actualOutput?: string;
+                    status: string;
+                    executionTime?: number;
+                    memoryUsed?: number;
+                    stderr?: string;
+                    compileOutput?: string;
+                }>;
+            },
             {
                 userSolutionId: number;
                 userProblemSessionId: number;
@@ -101,10 +117,19 @@ export const problemApi = baseApi.injectEndpoints({
                 code: string;
                 language: string;
                 isSubmit: boolean;
+                testcases?: {
+                    items: Array<{
+                        testCaseId: number;
+                        input: string;
+                        expectedOutput: string;
+                        explaination: string;
+                    }>;
+                    totalCount: number;
+                };
             }
         >({
             query: (body) => ({
-                url: API_URLS.problem.userSolution,
+                url: API_URLS.problem.runCode,
                 method: 'POST',
                 body,
             }),

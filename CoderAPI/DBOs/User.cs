@@ -8,7 +8,7 @@ namespace CoderAPI.DBOs;
 
 [Table("User")]
 [Index("Email", Name = "UQ_Email", IsUnique = true)]
-[Index("PhoneNumber", Name = "UQ_Phone", IsUnique = true)]
+[Index("PhoneNumber", Name = "UQ_Phone", IsUnique = true)] // Allows null values (optional phone number)
 [Index("UserName", Name = "UQ_UserName", IsUnique = true)]
 public partial class User
 {

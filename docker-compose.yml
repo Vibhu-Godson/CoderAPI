@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  coderapi:
+    build: .
+    container_name: coderapi
+    env_file: .env
+    depends_on:
+      - mssql
+      - rabbitmq
+      - judge0
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=tcp:${MSSQL_HOST},1433;Initial Catalog=${MSSQL_DB};User Id=${MSSQL_USER};Password=${MSSQL_PASSWORD};
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=${RABBITMQ_USER}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    env_file: .env
+    environment:
+      SA_PASSWORD: "${MSSQL_PASSWORD}"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    restart: unless-stopped
+
+  judge0:
+    image: judge0/judge0:latest
+    container_name: judge0
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${JUDGE0_DB_USER}:${JUDGE0_DB_PASSWORD}@judge0db:5432/${JUDGE0_DB_NAME}
+    depends_on:
+      - judge0db
+    restart: unless-stopped
+
+  judge0db:
+    image: postgres:13
+    container_name: judge0db
+    env_file: .env
+    environment:
+      - POSTGRES_DB=${JUDGE0_DB_NAME}
+      - POSTGRES_USER=${JUDGE0_DB_USER}
+      - POSTGRES_PASSWORD=${JUDGE0_DB_PASSWORD}
+    volumes:
+      - judge0db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  mssql-data:
+  judge0db-data:

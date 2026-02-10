@@ -56,6 +56,12 @@ export default function Composer({
         onSend(userInput, includeCode, includeBoard, code, boardData);
     };
 
+    const handlePaperclipClick = () => {
+        setIncludeCode(false);
+        setIncludeBoard(false);
+        setOpen(false);
+    };
+
     return (
         <div className="border-t border-zinc-200 pt-3 dark:border-zinc-700">
             {(includeCode || includeBoard) && (
@@ -67,13 +73,13 @@ export default function Composer({
 
             <div
                 ref={wrapperRef}
-                className={`relative flex items-end gap-2 rounded-full bg-white px-3 py-2 shadow-sm ring-1 ring-zinc-200 focus-within:ring-2 focus-within:ring-blue-500 dark:bg-zinc-900 dark:ring-zinc-700 ${
-                    isThinking ? "animate-pulse ring-blue-400" : ""
+                className={`relative flex items-end gap-2 rounded-lg bg-white px-3 py-2.5 shadow-sm border border-zinc-200 focus-within:border-blue-500 focus-within:shadow-md focus-within:shadow-blue-100 transition dark:bg-zinc-900 dark:border-zinc-700 dark:focus-within:border-blue-400 dark:focus-within:shadow-blue-900/30 ${
+                    isThinking ? "animate-pulse border-blue-400" : ""
                 }`}
             >
                 {/* 📎 Paperclip */}
                 <button
-                    onClick={() => setOpen((p) => !p)}
+                    onClick={handlePaperclipClick}
                     aria-label="Select context"
                     className={`relative rounded-full p-1 transition ${
                         includeCode || includeBoard
@@ -131,9 +137,10 @@ export default function Composer({
                             handleSendClick();
                         }
                     }}
-                    placeholder="Message the AI… (Enter to send, Shift+Enter for newline)"
-                    className="flex-1 resize-none bg-transparent px-3 py-1 text-sm text-zinc-900 outline-none dark:text-zinc-100 scrollbar-hide"
+                    placeholder="Ask anything…"
+                    className="flex-1 resize-none bg-transparent px-1 py-1 text-sm font-medium text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-zinc-100 dark:placeholder:text-zinc-500 scrollbar-hide"
                     rows={1}
+                    disabled={isThinking}
                 />
 
                 {/* 🚀 Send */}

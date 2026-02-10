@@ -215,14 +215,12 @@ export default function RegisterPage() {
             !!form.lastName &&
             !!form.userName &&
             /.+@.+\..+/.test(form.email) &&
-            /^(?:\+?\d{7,15})$/.test(form.phoneNumber) &&
             strongPasswordRegex.test(form.loginPassword) &&
             form.loginPassword === form.confirmPassword &&
             !!form.country &&
-            phoneVerified &&
             emailVerified
         );
-    }, [form, phoneVerified, emailVerified]);
+    }, [form, emailVerified]);
 
     const handleImage = async (e: any) => {
         const file = e.target.files?.[0];
@@ -264,6 +262,7 @@ export default function RegisterPage() {
             e.email = "Invalid email";
         if (
             touched.phoneNumber &&
+            form.phoneNumber &&
             !/^(?:\+?\d{7,15})$/.test(form.phoneNumber)
         )
             e.phoneNumber = "Invalid phone number";
@@ -583,69 +582,22 @@ export default function RegisterPage() {
 
                     <div>
                         <label className="text-sm font-medium text-[#334155]">
-                            WhatsApp Number
+                            WhatsApp Number (Optional)
                         </label>
-                        <div className="flex gap-2">
-                            <input
-                                name="phoneNumber"
-                                value={form.phoneNumber}
-                                onChange={handleChange}
-                                className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.phoneNumber
-                                        ? "border-red-500"
-                                        : "border-slate-300"
-                                    } focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150`}
-                            />
-                            {!phoneVerified && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleSendOtp("phone")}
-                                    disabled={!form.phoneNumber || errors.phoneNumber || phoneCooldown > 0}
-                                    className="mt-1 px-3 py-2 rounded-xl bg-[#4F46E5] text-white shadow-md hover:shadow-lg transition-shadow disabled:opacity-50"
-                                >
-                                    {phoneCooldown > 0 ? `${phoneCooldown}s` : "Send OTP"}
-                                </button>
-                            )}
-                        </div>
+                        <input
+                            name="phoneNumber"
+                            value={form.phoneNumber}
+                            onChange={handleChange}
+                            placeholder="+1234567890"
+                            className={`mt-1 w-full px-3 py-2 rounded-xl border ${errors.phoneNumber
+                                    ? "border-red-500"
+                                    : "border-slate-300"
+                                } focus:border-indigo-600 focus:shadow-[0_6px_18px_rgba(79,70,229,0.08)] outline-none transition-shadow duration-150`}
+                        />
                         {errors.phoneNumber && (
                             <p className="text-xs text-red-500">
                                 {errors.phoneNumber}
                             </p>
-                        )}
-
-                        {phoneVerified ? (
-                            <p className="text-xs text-green-600 mt-1">
-                                WhatsApp verified ✓
-                            </p>
-                        ) : (
-                            phoneOtpSent && (
-                                <div>
-                                    <OtpInputs
-                                        idPrefix="phone"
-                                        value={phoneOtpValue}
-                                        setValue={setPhoneOtpValue}
-                                        onComplete={(otp) =>
-                                            handleValidateOtp("phone", otp)
-                                        }
-                                    />
-                                    <div className="flex gap-2 mt-2 items-center">
-                                        <button
-                                            type="button"
-                                            disabled={phoneCooldown > 0}
-                                            className="text-sm text-[#4F46E5] underline disabled:opacity-50"
-                                            onClick={() => handleSendOtp("phone")}
-                                        >
-                                            {phoneCooldown > 0
-                                                ? `Resend in ${phoneCooldown}s`
-                                                : "Resend"}
-                                        </button>
-                                        {phoneVerifying && (
-                                            <p className="text-xs text-slate-500">
-                                                Verifying...
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            )
                         )}
                     </div>
 
@@ -735,8 +687,7 @@ export default function RegisterPage() {
                         </button>
 
                         <p className="text-xs text-slate-500 mt-2">
-                            Verify WhatsApp and Email to complete your
-                            registration.
+                            Verify Email to complete your registration.
                         </p>
                     </div>
                 </form>

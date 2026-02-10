@@ -19,7 +19,7 @@ export interface RegisterRequest {
     lastName: string;
     userName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber?: string; // Optional WhatsApp number
     loginPassword: string;
     country: string;
     //timezone: string;

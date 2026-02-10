@@ -165,8 +165,8 @@ export function useProblemSession(
     const wrappedRun = useCallback(async () => {
         if (!sessionId) return { ok: false, message: "No session" };
         try {
-            // running is often immediate or asynchronous via SignalR
-            setIsThinking(true);
+            // Clear thinking state immediately since we'll get instant response
+            setIsThinking(false);
             const res = await runOrSubmit({
                 userSolutionId: 0,
                 userProblemSessionId: sessionId,
@@ -176,15 +176,12 @@ export function useProblemSession(
                 isSubmit: false,
             }).unwrap();
 
-            if (!res.message.includes("Code is being processed")) {
+            // Show message if provided
+            if (res.message) {
                 setChat((c) => [...c, { from: "ai", text: res.message }]);
-                setIsThinking(false);
-            } else {
-                // server side processing; we'll wait for signalR ExecutionCompleted to clear
-                setIsThinking(true);
             }
 
-            return { ok: res.status ?? true, message: res.message, userSolutionId: res.userSolutionId };
+            return { ok: res.status ?? true, message: res.message, userSolutionId: res.userSolutionId, testCaseResults: res.testCaseResults };
         } catch {
             setIsThinking(false);
             return { ok: false, message: "Run failed" };
@@ -196,7 +193,7 @@ export function useProblemSession(
         if (!sessionId) return { ok: false, message: "No session" };
 
         try {
-            setIsThinking(true);
+            setIsThinking(false);
             const res = await runOrSubmit({
                 userSolutionId: 0,
                 userProblemSessionId: sessionId,
@@ -208,17 +205,33 @@ export function useProblemSession(
 
             if (res.userSolutionId) {
                 setLastSubmittedSolutionId(res.userSolutionId);
-                await signalRService.joinSolutionGroup(res.userSolutionId);
+                // No longer need to join solution group via SignalR
+                // await signalRService.joinSolutionGroup(res.userSolutionId);
             }
 
-            if (!res.message.includes("Code is being processed")) {
+            // Show message if provided
+            if (res.message) {
                 setChat((c) => [...c, { from: "ai", text: res.message }]);
-                setIsThinking(false);
-            } else {
-                setIsThinking(true); // waiting for signalR ExecutionCompleted
             }
 
-            return { ok: res.status ?? true, message: res.message, userSolutionId: res.userSolutionId };
+            // Check if all test cases passed
+            if (res.testCaseResults && res.testCaseResults.length > 0) {
+                const allPassed = res.testCaseResults.every((tc: any) => tc.status?.toLowerCase() === "accepted");
+                if (allPassed) {
+                    setShowSuccess(true);
+                    setTimeout(() => setShowSuccess(false), 3500);
+
+                    const randomUserMsg = USER_SUCCESS_MESSAGES[Math.floor(Math.random() * USER_SUCCESS_MESSAGES.length)];
+                    const randomAiMsg = AI_FOLLOWUP_MESSAGES[Math.floor(Math.random() * AI_FOLLOWUP_MESSAGES.length)];
+
+                    setChat((c) => [...c, { from: "user", text: randomUserMsg }]);
+                    setTimeout(() => {
+                        setChat((c) => [...c, { from: "ai", text: randomAiMsg }]);
+                    }, 800);
+                }
+            }
+
+            return { ok: res.status ?? true, message: res.message, userSolutionId: res.userSolutionId, testCaseResults: res.testCaseResults };
         } catch {
             setIsThinking(false);
             return { ok: false, message: "Submit failed" };

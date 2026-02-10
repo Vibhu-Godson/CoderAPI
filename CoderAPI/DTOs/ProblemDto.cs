@@ -16,5 +16,7 @@ namespace CoderAPI.DTOs
         public List<string> Hints { get; set; }
         public List<string> AdditionalDetails { get; set; }
         public List<string> AnalyticDetails { get; set; }
+        public string UserStatus { get; set; }
+        public long LastIncompleteSessionId { get; set; }
     }
 }

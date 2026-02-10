@@ -57,7 +57,7 @@ builder.Services.AddHttpClient<IWhatsappHelper, WhatsappHelper>(client =>
 });
 
 builder.Services.AddMemoryCache();
-// MassTransit + RabbitMQ
+ //MassTransit + RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<CodeRunnerConsumer>();

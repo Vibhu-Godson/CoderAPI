@@ -8,9 +8,12 @@ import ResetPassword from './auth/pages/ResetPassword';
 import RequireAuth from "./auth/RequireAuth";
 
 import HomePage from './Home/pages/HomePage';
+import StartPage from './Home/pages/StartPage';
 import PlansPage from './Plan/pages/PlansPage';
 import ProblemsPage from './problem/pages/ProblemsPage';
 import ProblemDetailPage from './problem/pages/ProblemDetailPage';
+import ProblemPreviewPage from './problem/pages/ProblemPreviewPage';
+import ProblemDetailPage2_0 from './problem/pages/ProblemDetailPage2.0';
 import { CoursesPage } from './Courses/pages/CoursesPage';
 import { CourseDetailsPage } from './Courses/pages/CourseDetailsPage';
 import { BundleDetailsPage } from './Courses/pages/BundleDetailsPage';
@@ -34,25 +37,34 @@ import OnboardingPage from "./UserOnboard/pages/OnboardingPage";
 
 import SettingsPage from "./Settings/pages/SettingsPage"; 
 import ProfilePage from "./common/profile";
+const isProblemDetailPage = window.location.pathname.startsWith("/problem/") || window.location.pathname.startsWith("/problem-v1/") || window.location.pathname.startsWith("/problem-solve/");
 export default function App() {
     return (
         <>
-            <Navbar />
+            {!isProblemDetailPage && <Navbar />}
 
             <Routes>
                 {/* Public routes */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/problems" element={<ProblemsPage />} />
+                    {/* Preview page - shows problem statement */}
+                    <Route path="/problem/:idSlug" element={<ProblemPreviewPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/start" element={<StartPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/reset-password" element={<ResetPassword/> }/>
 
+                {/* Onboarding route is public so user can access it even if not onboarded */}
+
                 {/* Protected routes */}
                 <Route element={<RequireAuth />}>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/home" element={<HomePage />} />
-                    <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/plans" element={<PlansPage />} />
-                    <Route path="/problems" element={<ProblemsPage />} />
-                    <Route path="/problems/:idSlug" element={<ProblemDetailPage />} />
+                    <Route path="/onboarding" element={<OnboardingPage />} />
+                    {/* Solve page - shows code editor with chat */}
+                    <Route path="/problem-solve/:idSlug" element={<ProblemDetailPage2_0 />} />
+                    {/* Keep old version available for reference at legacy route */}
+                    <Route path="/problem-v1/:idSlug" element={<ProblemDetailPage />} />
                     <Route path="/courses" element={<CoursesPage />} />
                     <Route path="/course/:id" element={<CourseDetailsPage />} />
                     <Route path="/bundle/:id" element={<BundleDetailsPage />} />

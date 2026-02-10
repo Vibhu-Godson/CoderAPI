@@ -25,7 +25,7 @@ export const API_URLS = {
         detail: (id: number) => `${BASE_URL}/api/Problem/${id}`,
         newSession: `${BASE_URL}/api/Problem/NewSession`,
         prompt: `${BASE_URL}/api/Problem/Promt`,
-        userSolution: `${BASE_URL}/api/Problem/UserSolution`,
+        runCode: `${BASE_URL}/api/ProblemPlayGround/RunCode`,
         completeSession: (id: number) => `${BASE_URL}/api/Problem/CompleteSession?userSessionId=${id}`,
     },
     master: {

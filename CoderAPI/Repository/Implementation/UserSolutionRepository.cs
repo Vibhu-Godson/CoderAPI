@@ -47,7 +47,7 @@ namespace CoderAPI.Repository.Implementation
             }
         }
 
-        public async Task<(bool,string)> MarkUserSolutionCompleted(long userSolutionId)
+        public async Task<(bool IsSubmit,string finalStatus)> MarkUserSolutionCompleted(long userSolutionId)
         {
             try
             {

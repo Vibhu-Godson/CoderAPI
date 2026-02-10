@@ -33,6 +33,21 @@ namespace CoderAPI.Repository.Implementation
             }
         }
 
+        public async Task<bool> AddUserTestCaseResults(List<UserTestCaseResult> results)
+        {
+            try
+            {
+                await _context.UserTestCaseResults.AddRangeAsync(results);
+                var ok = await _context.SaveChangesAsync();
+                return ok > 0;
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"DbError: Unable to add results");
+                throw;
+            }
+        }
+
         public Task<List<TestCase>> GetTestcasesByProblem(long ProblemId, bool IsSubmit)
         {
             try

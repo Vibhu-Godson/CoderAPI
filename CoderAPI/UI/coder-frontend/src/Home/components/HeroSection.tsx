@@ -26,7 +26,7 @@ export default function HeroSection({ mousePosition, onMouseMove }: Props) {
             <div className="relative max-w-6xl mx-auto px-6 py-28 text-center">
                 <div className="inline-block px-4 py-2 bg-white border border-indigo-200 rounded-full shadow-sm mb-8">
                     <span className="text-indigo-600 text-sm">
-                        A calm place to begin software engineering
+                        A calm place to begin learning for Future
                     </span>
                 </div>
 
